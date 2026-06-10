@@ -1,40 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlmodel import Session
 
-from authentication.security import decode_access_token
-from models.student import StudentSelection
+from db import get_session
+from models.schemas import StudentSelection
+from routes.dependencies import get_current_user
 from storage import get_user_by_email, update_student_selection
 
-
 router = APIRouter(prefix="/api/student", tags=["Student"])
-
-# This reads the Authorization: Bearer <token> header.
-bearer_scheme = HTTPBearer()
-
-
-def get_logged_in_user_email(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-) -> str:
-    """Get the logged-in user's email from the JWT token."""
-    token_data = decode_access_token(credentials.credentials)
-    email = token_data.get("sub")
-
-    if not email:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
-        )
-
-    return email
 
 
 @router.post("/selection")
 def save_student_selection(
     selection: StudentSelection,
-    email: str = Depends(get_logged_in_user_email),
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
 ):
-    """Save or update the logged-in student's selected subject and topic."""
-    update_student_selection(email, selection.subject, selection.topic)
+    update_student_selection(session, current_user.email, selection.subject, selection.topic)
 
     return {
         "message": "Selection saved successfully",
@@ -44,9 +25,11 @@ def save_student_selection(
 
 
 @router.get("/selection")
-def get_student_selection(email: str = Depends(get_logged_in_user_email)):
-    """Return the logged-in student's saved subject and topic."""
-    user = get_user_by_email(email)
+def get_student_selection(
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    user = get_user_by_email(session, current_user.email)
 
     if not user:
         raise HTTPException(
@@ -55,6 +38,6 @@ def get_student_selection(email: str = Depends(get_logged_in_user_email)):
         )
 
     return {
-        "selected_subject": user.get("selected_subject"),
-        "selected_topic": user.get("selected_topic"),
+        "selected_subject": user.selected_subject,
+        "selected_topic": user.selected_topic,
     }

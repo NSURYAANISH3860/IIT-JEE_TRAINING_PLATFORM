@@ -1,7 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-# Data sent when a student chooses what they want to study.
 class StudentSelection(BaseModel):
-    subject: str
-    topic: str
+    subject: str = Field(..., min_length=2)
+    topic: str = Field(..., min_length=2)

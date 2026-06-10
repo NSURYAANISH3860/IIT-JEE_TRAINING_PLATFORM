@@ -1,16 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
-# Data required when a student creates an account.
 class UserSignup(BaseModel):
     name: str = Field(..., min_length=2)
-    email: str
+    email: EmailStr
     password: str = Field(..., min_length=6)
-    class_level: str
-    target_exam: str
+    class_level: str = Field(..., min_length=2)
+    target_exam: str = Field(..., min_length=2)
 
 
-# Data required when a student logs in.
 class UserLogin(BaseModel):
-    email: str
-    password: str
+    email: EmailStr
+    password: str = Field(..., min_length=6)
