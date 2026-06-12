@@ -31,8 +31,8 @@ const agents = [
   },
   {
     icon: Map,
-    title: "Concept Mapper",
-    text: "Connects chapters, formulas, and mistakes so every revision session has a purpose.",
+    title: "Student Library",
+    text: "Connects chapters, formulas, and mistakes so every revision session has a purpose",
   },
   {
     icon: Target,

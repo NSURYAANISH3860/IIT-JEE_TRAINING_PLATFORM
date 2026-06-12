@@ -3,8 +3,6 @@ import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
 
-const API_BASE_URL = "http://127.0.0.1:8000";
-
 type LoginProps = {
   initialMode?: "login" | "signup";
 };
@@ -20,25 +18,22 @@ function Login({ initialMode = "login" }: LoginProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function loginStudent(loginEmail: string, loginPassword: string) {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: loginEmail,
-        password: loginPassword,
-      }),
-    });
+  function loginStudent(loginEmail: string, loginPassword: string) {
+    localStorage.setItem("access_token", "local_access_token");
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.detail || "Login failed. Please try again.");
+    const existingUser = localStorage.getItem("current_user");
+    if (!existingUser) {
+      const defaultName = loginEmail.split("@")[0] || "Student";
+      localStorage.setItem(
+        "current_user",
+        JSON.stringify({
+          name: defaultName,
+          email: loginEmail,
+          class_level: "",
+          target_exam: "",
+        }),
+      );
     }
-
-    localStorage.setItem("access_token", data.access_token);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -48,28 +43,18 @@ function Login({ initialMode = "login" }: LoginProps) {
 
     try {
       if (isSignup) {
-        const signupResponse = await fetch(`${API_BASE_URL}/api/auth/signup`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
+        localStorage.setItem(
+          "current_user",
+          JSON.stringify({
             name,
             email,
-            password,
             class_level: classLevel,
             target_exam: targetExam,
           }),
-        });
-
-        const signupData = await signupResponse.json();
-
-        if (!signupResponse.ok) {
-          throw new Error(signupData.detail || "Signup failed. Please try again.");
-        }
+        );
       }
 
-      await loginStudent(email, password);
+      loginStudent(email, password);
       window.dispatchEvent(new Event("auth-change"));
       navigate("/dashboard");
     } catch (requestError) {

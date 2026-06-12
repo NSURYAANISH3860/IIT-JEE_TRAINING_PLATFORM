@@ -167,6 +167,23 @@ export default function ChatbotWidget() {
   }, [isOpen]);
 
   useEffect(() => {
+    if (localStorage.getItem("open_chatbot") === "1") {
+      setIsOpen(true);
+      localStorage.removeItem("open_chatbot");
+    }
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === "open_chatbot" && event.newValue === "1") {
+        setIsOpen(true);
+        localStorage.removeItem("open_chatbot");
+      }
+    }
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
 
