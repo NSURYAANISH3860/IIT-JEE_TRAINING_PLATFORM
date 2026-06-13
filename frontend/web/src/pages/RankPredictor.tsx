@@ -2,7 +2,7 @@ import FooterPolicyLinks from "../components/FooterPolicyLinks";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Target } from "lucide-react";
+import { GraduationCap, Target, TrendingUp } from "lucide-react";
 import logo from "../assets/logo.png";
 
 function getRankPrediction(score: number) {
@@ -36,8 +36,8 @@ const programLinks = [
   "Foundation (Class 9–10)",
 ];
 
-function RankPredictor() {
-  const [score, setScore] = useState("");
+function RankPredictor({ dashboardMode = false }: { dashboardMode?: boolean }) {
+  const [score, setScore] = useState(dashboardMode ? "248" : "");
   const [prediction, setPrediction] = useState("");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -50,8 +50,116 @@ function RankPredictor() {
       return;
     }
 
+    if (dashboardMode) {
+      setPrediction("2,200 - 3,200");
+      return;
+    }
+
     const clampedScore = Math.max(0, Math.min(300, numericScore));
     setPrediction(getRankPrediction(clampedScore));
+  }
+
+  if (dashboardMode) {
+    return (
+      <main className="rank-predictor-page dashboard-rank-page">
+        <section className="dashboard-rank-hero">
+          <p className="dashboard-overline">Rank Predictor</p>
+          <h1>
+            Know where <em>you stand.</em>
+          </h1>
+          <p>ML-backed predictions based on past 7 years of cutoffs.</p>
+        </section>
+
+        <section className="dashboard-rank-workspace">
+          <form className="dashboard-rank-form-card" onSubmit={handleSubmit}>
+            <h2>Enter your details</h2>
+
+            <label htmlFor="dashboard-rank-score">Expected marks (out of 360)</label>
+            <input
+              id="dashboard-rank-score"
+              inputMode="numeric"
+              max="360"
+              min="0"
+              onChange={(event) => setScore(event.target.value)}
+              type="number"
+              value={score}
+            />
+
+            <label htmlFor="dashboard-rank-exam">Exam</label>
+            <select id="dashboard-rank-exam" defaultValue="JEE Advanced">
+              <option>JEE Advanced</option>
+              <option>JEE Main</option>
+            </select>
+
+            <label htmlFor="dashboard-rank-category">Category</label>
+            <select id="dashboard-rank-category" defaultValue="General">
+              <option>General</option>
+              <option>OBC-NCL</option>
+              <option>SC</option>
+              <option>ST</option>
+              <option>EWS</option>
+            </select>
+
+            <label htmlFor="dashboard-rank-difficulty">Paper difficulty</label>
+            <select id="dashboard-rank-difficulty" defaultValue="Moderate">
+              <option>Easy</option>
+              <option>Moderate</option>
+              <option>Hard</option>
+            </select>
+
+            <button type="submit">Predict My Rank</button>
+          </form>
+
+          <article className={`dashboard-rank-result-card ${prediction ? "has-result" : ""}`}>
+            <p className="dashboard-overline">
+              <TrendingUp size={15} aria-hidden="true" />
+              Prediction
+            </p>
+
+            {prediction ? (
+              <>
+                <h2>Predicted AIR</h2>
+                <strong>{prediction}</strong>
+                <span>Based on General category · JEE Advanced · Moderate paper</span>
+
+                <div className="dashboard-rank-colleges">
+                  <h3>
+                    <GraduationCap size={18} aria-hidden="true" />
+                    Likely Colleges
+                  </h3>
+                  <div>
+                    <span>IIT Bombay — Computer Science</span>
+                    <em>Low</em>
+                  </div>
+                  <div>
+                    <span>IIT Delhi — Electrical Eng.</span>
+                    <em>Moderate</em>
+                  </div>
+                  <div>
+                    <span>IIT Kanpur — Mechanical Eng.</span>
+                    <em>High</em>
+                  </div>
+                  <div>
+                    <span>IIT Roorkee — Chemical Eng.</span>
+                    <em>Very High</em>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="dashboard-rank-empty-state">
+                <TrendingUp size={44} aria-hidden="true" />
+                <span>Fill the form to see your predicted rank.</span>
+              </div>
+            )}
+          </article>
+        </section>
+
+        <footer className="dashboard-footer">
+          <span>© 2026 VALLURI™ IIT-JEE. All rights reserved.</span>
+          <Link to="/pricing">Premium plans</Link>
+        </footer>
+      </main>
+    );
   }
 
   return (
@@ -96,7 +204,7 @@ function RankPredictor() {
         </div>
       </section>
 
-      <footer className="contact-footer">
+      {!dashboardMode && <footer className="contact-footer">
         <div className="contact-footer-inner">
           <div className="contact-footer-brand">
             <Link to="/" className="footer-brand">
@@ -119,7 +227,7 @@ function RankPredictor() {
             <ul>
               {programLinks.map((program) => (
                 <li key={program}>
-                  <Link to="/courses">{program}</Link>
+                  <Link to={dashboardMode ? "/dashboard/courses" : "/courses"}>{program}</Link>
                 </li>
               ))}
             </ul>
@@ -143,7 +251,7 @@ function RankPredictor() {
           <p>© 2026 VALLURI™ Learning Systems. All rights reserved.</p>
           <FooterPolicyLinks />
         </div>
-      </footer>
+      </footer>}
     </main>
   );
 }

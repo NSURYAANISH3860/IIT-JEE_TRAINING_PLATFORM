@@ -1,21 +1,33 @@
+import {
+  BarChart3,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  FileQuestion,
+  Gauge,
+  LogOut,
+  Sparkles,
+  TrendingUp,
+  UserRound,
+} from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
-type DashboardNavItem =
-  | { label: string; to: string }
-  | { label: string; action: "chatbot" };
+type DashboardNavItem = {
+  icon: typeof Gauge;
+  label: string;
+  to: string;
+};
 
 const dashboardNavItems: DashboardNavItem[] = [
- { label: "Dashboard", to: "/dashboard" },
-  { label: "My Courses", to: "/dashboard/courses" },
-  { label: "Mock Tests", to: "/dashboard/mock-tests" },
-  { label: "Doubt Solver", action: "chatbot" },
-  { label: "Adaptive Planner", to: "/dashboard/adaptive-planner" },
-  { label: "Concept Library", to: "/dashboard/study-materials" },
-  { label: "Rank Predictor", to: "/dashboard/rank-predictor" },
-  { label: "AI Coaching", to: "/dashboard/ai-coaching" },
-  { label: "Study Materials", to: "/dashboard/study-materials" },
-  { label: "Profile", to: "/dashboard/profile" },
+  { icon: Gauge, label: "Dashboard", to: "/dashboard" },
+  { icon: BookOpen, label: "My Courses", to: "/dashboard/courses" },
+  { icon: FileQuestion, label: "Mock Tests", to: "/dashboard/mock-tests" },
+  { icon: CalendarDays, label: "Adaptive Planner", to: "/dashboard/adaptive-planner" },
+  { icon: TrendingUp, label: "Rank Predictor", to: "/dashboard/rank-predictor" },
+  { icon: Sparkles, label: "AI Coaching", to: "/dashboard/ai-coaching" },
+  { icon: BarChart3, label: "Study Materials", to: "/dashboard/study-materials" },
+  { icon: UserRound, label: "Profile", to: "/dashboard/profile" },
 ];
 
 function DashboardNavbar() {
@@ -27,52 +39,57 @@ function DashboardNavbar() {
     navigate("/login");
   }
 
-  function openChatbot() {
-    window.dispatchEvent(new Event("open-chatbot"));
-}
-
-
   return (
-    <header className="dashboard-navbar">
-      <nav className="dashboard-nav-inner" aria-label="Student dashboard navigation">
-        <Link to="/dashboard" className="brand" aria-label="VALLURI dashboard">
-          <img src={logo} alt="VALLURI logo" className="brand-logo-img" />
-          <span className="brand-text">
-            <span className="brand-name">
+    <>
+      <aside className="dashboard-sidebar" aria-label="Student dashboard sidebar">
+        <Link to="/dashboard" className="dashboard-sidebar-brand" aria-label="VALLURI dashboard">
+          <img src={logo} alt="VALLURI logo" className="dashboard-sidebar-logo" />
+          <span className="dashboard-sidebar-brand-text">
+            <span className="dashboard-sidebar-name">
               VALLURI<sup>TM</sup>
             </span>
-            <span className="brand-subtitle">IIT-JEE</span>
+            <span className="dashboard-sidebar-subtitle">IIT-JEE</span>
           </span>
         </Link>
 
-        <div className="dashboard-nav-links">
-          {dashboardNavItems.map((item) =>
-            "action" in item ? (
-              <button
-                key={item.label}
-                type="button"
-                className="dashboard-nav-link-button"
-                onClick={openChatbot}
-              >
-                {item.label}
-              </button>
-            ) : item.to.startsWith("#") || item.to.includes("#") ? (
-              <a href={item.to} key={item.label}>
-                {item.label}
-              </a>
-            ) : (
-              <NavLink to={item.to} key={item.label}>
-                {item.label}
+        <nav className="dashboard-sidebar-links" aria-label="Student dashboard navigation">
+          {dashboardNavItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink className="dashboard-sidebar-link" key={item.label} to={item.to}>
+                <Icon size={19} />
+                <span>{item.label}</span>
               </NavLink>
-            ),
-          )}
+            );
+          })}
+        </nav>
+
+      </aside>
+
+      <header className="dashboard-topbar" aria-label="Student dashboard status bar">
+        <div className="dashboard-live-pill">
+          <span aria-hidden="true"></span>
+          Live session in 2h · JEE Advanced Crash Batch
         </div>
 
-        <button type="button" className="get-started-btn" onClick={logout}>
-          Logout
-        </button>
-      </nav>
-    </header>
+        <div className="dashboard-topbar-actions">
+          <button type="button" className="dashboard-icon-button" aria-label="Notifications">
+            <Bell size={19} />
+          </button>
+          <div className="dashboard-profile-chip">
+            <span className="dashboard-avatar">A</span>
+            <span>
+              <strong>Aspirant</strong>
+              <small>JEE 2026 · Class XII</small>
+            </span>
+          </div>
+          <button type="button" className="dashboard-icon-button" onClick={logout} aria-label="Logout">
+            <LogOut size={19} />
+          </button>
+        </div>
+      </header>
+    </>
   );
 }
 

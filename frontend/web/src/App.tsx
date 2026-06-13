@@ -7,13 +7,17 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
+import DashboardNavbar from "./components/DashboardNavbar";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
+import AdaptivePlanner from "./pages/AdaptivePlanner";
+import AICoaching from "./pages/AICoaching";
 import Analytics from "./pages/Analytics";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MockTest from "./pages/MockTest";
+import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Pricing from "./pages/Pricing";
 import RankPredictor from "./pages/RankPredictor";
@@ -38,6 +42,39 @@ function ProtectedRoute({ children }: { children: ReactElement }) {
   return children;
 }
 
+function DashboardRoute({ children }: { children: ReactElement }) {
+  return (
+    <ProtectedRoute>
+      <div className="dashboard-route-shell">
+        <DashboardNavbar />
+        {children}
+      </div>
+    </ProtectedRoute>
+  );
+}
+
+function DashboardUtilityPage({
+  eyebrow,
+  title,
+  text,
+}: {
+  eyebrow: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <main className="student-dashboard">
+      <div className="student-dashboard-inner">
+        <section className="dashboard-section dashboard-utility-page">
+          <p className="dashboard-label">{eyebrow}</p>
+          <h1>{title}</h1>
+          <p>{text}</p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
 function AppShell() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
@@ -52,33 +89,65 @@ function AppShell() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <DashboardRoute>
               <Dashboard />
-            </ProtectedRoute>
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/courses"
+          element={
+            <DashboardRoute>
+              <Courses dashboardMode />
+            </DashboardRoute>
           }
         />
         <Route
           path="/dashboard/mock-tests"
           element={
-            <ProtectedRoute>
-              <MockTest />
-            </ProtectedRoute>
+            <DashboardRoute>
+              <MockTest dashboardMode />
+            </DashboardRoute>
           }
         />
         <Route
           path="/dashboard/rank-predictor"
           element={
-            <ProtectedRoute>
-              <RankPredictor />
-            </ProtectedRoute>
+            <DashboardRoute>
+              <RankPredictor dashboardMode />
+            </DashboardRoute>
           }
         />
         <Route
           path="/dashboard/study-materials"
           element={
-            <ProtectedRoute>
-              <StudyMaterials />
-            </ProtectedRoute>
+            <DashboardRoute>
+              <StudyMaterials dashboardMode />
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/adaptive-planner"
+          element={
+            <DashboardRoute>
+              <AdaptivePlanner />
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ai-coaching"
+          element={
+            <DashboardRoute>
+              <AICoaching />
+            </DashboardRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <DashboardRoute>
+              <Profile />
+            </DashboardRoute>
           }
         />
         <Route path="/mock-test" element={<MockTest />} />
@@ -98,7 +167,7 @@ function AppShell() {
         <Route path="/refund-cancellation" element={<RefundCancellation />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
       </Routes>
-      {!isDashboard && <ChatbotWidget />}
+      <ChatbotWidget />
     </div>
   );
 }

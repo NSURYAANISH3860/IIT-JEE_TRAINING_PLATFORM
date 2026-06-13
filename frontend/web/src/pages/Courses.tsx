@@ -1,6 +1,6 @@
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
 import { Link } from "react-router-dom";
-import { Check } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, Play, ShieldCheck, UserRound } from "lucide-react";
 import logo from "../assets/logo.png";
 
 const courses = [
@@ -55,7 +55,165 @@ const programLinks = [
   "Foundation (Class 9–10)",
 ];
 
-function Courses() {
+const activeCourses = [
+  {
+    label: "Elite · Live + Recorded",
+    title: "JEE Advanced - Elite Crash Course 2026",
+    mentor: "Dr. R. Iyer (IIT-B)",
+    nextClass: "Today · 6:30 PM · Modern Physics",
+    activeTill: "Active till May 2026",
+    progress: 62,
+    featured: true,
+  },
+  {
+    label: "Self-Paced",
+    title: "Chemistry Mastery - Organic Edition",
+    mentor: "Prof. A. Sharma (IIT-K)",
+    nextClass: "Tomorrow · 9:00 AM · Coordination",
+    activeTill: "Active till Dec 2026",
+    progress: 41,
+  },
+];
+
+const completedCourses = [
+  {
+    title: "Class XI Foundation - Math",
+    mentor: "Dr. P. Verma",
+    finished: "Apr 2026",
+    grade: "A+",
+  },
+];
+
+const recommendedCourses = [
+  { label: "Add-on", title: "1-on-1 Mentor Program", price: "Rs. 29,999" },
+  { label: "Add-on", title: "Test Series - Pinnacle", price: "Rs. 7,999" },
+  { label: "Add-on", title: "Revision Bootcamp", price: "Rs. 12,999" },
+];
+
+function Courses({ dashboardMode = false }: { dashboardMode?: boolean }) {
+  const coursesPath = dashboardMode ? "/dashboard/courses" : "/courses";
+  const mockTestsPath = dashboardMode ? "/dashboard/mock-tests" : "/mock-test";
+
+  if (dashboardMode) {
+    return (
+      <main className="courses-page dashboard-courses-page">
+        <section className="courses-hero dashboard-courses-hero">
+          <p className="dashboard-overline">My Courses</p>
+          <h1>
+            Your learning <em>library.</em>
+          </h1>
+          <p>Every batch you&apos;ve enrolled in - live, recorded, and personalised.</p>
+        </section>
+
+        <section className="dashboard-courses-section dashboard-courses-section-light">
+          <div className="dashboard-courses-section-heading">
+            <div>
+              <p className="dashboard-overline">Active</p>
+              <h2>Active Courses</h2>
+            </div>
+            <Link to="/dashboard/study-materials">
+              Browse all <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="dashboard-course-grid">
+            {activeCourses.map((course) => (
+              <article
+                className={`dashboard-course-card${course.featured ? " featured" : ""}`}
+                key={course.title}
+              >
+                <div className="dashboard-course-card-top">
+                  <p>{course.label}</p>
+                  <span>Enrolled</span>
+                </div>
+
+                <h3>{course.title}</h3>
+
+                <dl className="dashboard-course-meta">
+                  <div>
+                    <dt>
+                      <UserRound size={16} />
+                      Mentor
+                    </dt>
+                    <dd>{course.mentor}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <CalendarDays size={16} />
+                      Next
+                    </dt>
+                    <dd>{course.nextClass}</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <ShieldCheck size={16} />
+                      Status
+                    </dt>
+                    <dd>{course.activeTill}</dd>
+                  </div>
+                </dl>
+
+                <div className="dashboard-course-progress-row">
+                  <span>Course Progress</span>
+                  <strong>{course.progress}%</strong>
+                </div>
+                <div className="dashboard-course-progress-track">
+                  <span style={{ width: `${course.progress}%` }}></span>
+                </div>
+
+                <Link className="dashboard-course-continue" to="/dashboard/courses">
+                  <Play size={17} /> Continue
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-courses-section dashboard-courses-section-dark">
+          <div className="dashboard-courses-section-heading">
+            <div>
+              <p className="dashboard-overline">Completed</p>
+              <h2>Completed Courses</h2>
+            </div>
+          </div>
+
+          <div className="dashboard-completed-grid">
+            {completedCourses.map((course) => (
+              <article className="dashboard-completed-card" key={course.title}>
+                <h3>{course.title}</h3>
+                <p>Mentor · {course.mentor}</p>
+                <p>Finished · {course.finished}</p>
+                <strong>Grade · {course.grade}</strong>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="dashboard-courses-section dashboard-courses-section-light">
+          <div className="dashboard-courses-section-heading">
+            <div>
+              <p className="dashboard-overline">Upgrade</p>
+              <h2>Recommended for you</h2>
+            </div>
+          </div>
+
+          <div className="dashboard-recommendation-grid">
+            {recommendedCourses.map((course) => (
+              <article className="dashboard-recommendation-card" key={course.title}>
+                <p>{course.label}</p>
+                <h3>{course.title}</h3>
+                <strong>{course.price}</strong>
+                <Link to="/pricing">Upgrade</Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <footer className="dashboard-footer">© 2026 VALLURI™ IIT-JEE. All rights reserved.</footer>
+      </main>
+    );
+  }
+
   return (
     <main className="courses-page">
       <section className="courses-hero">
@@ -106,7 +264,7 @@ function Courses() {
                   ))}
                 </ul>
                 <Link
-                  to="/mock-test"
+                  to={mockTestsPath}
                   className={
                     course.featured ? "course-enroll-btn" : "course-enroll-btn-dark"
                   }
@@ -119,7 +277,7 @@ function Courses() {
         </div>
       </section>
 
-      <footer className="contact-footer">
+      {!dashboardMode && <footer className="contact-footer">
         <div className="contact-footer-inner">
           <div className="contact-footer-brand">
             <Link to="/" className="footer-brand">
@@ -142,7 +300,7 @@ function Courses() {
             <ul>
               {programLinks.map((program) => (
                 <li key={program}>
-                  <Link to="/courses">{program}</Link>
+                  <Link to={coursesPath}>{program}</Link>
                 </li>
               ))}
             </ul>
@@ -166,7 +324,7 @@ function Courses() {
           <p>© 2026 VALLURI™ Learning Systems. All rights reserved.</p>
           <FooterPolicyLinks />
         </div>
-      </footer>
+      </footer>}
     </main>
   );
 }

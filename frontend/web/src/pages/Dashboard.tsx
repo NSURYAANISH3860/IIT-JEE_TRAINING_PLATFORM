@@ -1,219 +1,225 @@
 import {
-  BarChart3,
   BookOpen,
-  Clock3,
-  FileText,
-  GraduationCap,
-  Medal,
+  CalendarDays,
+  ChevronRight,
+  Flame,
   MessageCircleQuestion,
-  PlayCircle,
+  Play,
   Target,
-  TrendingUp,
+  Trophy,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import DashboardNavbar from "../components/DashboardNavbar";
-import FooterPolicyLinks from "../components/FooterPolicyLinks";
-
-const courses = [
-  {
-    name: "Two-Year Integrated",
-    progress: 62,
-    tags: ["Physics", "Chemistry", "Mathematics"],
-  },
-  {
-    name: "Sprint to JEE",
-    progress: 48,
-    tags: ["Physics", "Chemistry", "Mathematics"],
-  },
-  {
-    name: "Advanced Booster",
-    progress: 36,
-    tags: ["Advanced", "Mocks", "Revision"],
-  },
-  {
-    name: "Foundation Class 9-10",
-    progress: 72,
-    tags: ["Concepts", "Olympiad", "Basics"],
-  },
-];
 
 const stats = [
-  { label: "Mock Tests Attempted", value: "18", icon: FileText },
-  { label: "Average Score", value: "74%", icon: BarChart3 },
-  { label: "Study Hours", value: "126h", icon: Clock3 },
-  { label: "Predicted Rank", value: "8.4k", icon: Medal },
+  {
+    icon: BookOpen,
+    kicker: "Active Course",
+    title: "JEE Adv. Crash",
+    detail: "Batch · Elite 2026",
+  },
+  {
+    icon: Trophy,
+    kicker: "Mock Tests Completed",
+    title: "24",
+    detail: "of 60 in plan",
+  },
+  {
+    icon: Target,
+    kicker: "Accuracy",
+    title: "82%",
+    detail: "+4% this week",
+  },
+  {
+    icon: Flame,
+    kicker: "Study Streak",
+    title: "37d",
+    detail: "Personal best",
+  },
+  {
+    icon: MessageCircleQuestion,
+    kicker: "AI Doubts Solved",
+    title: "318",
+    detail: "avg 4s response",
+  },
 ];
 
-const materials = [
-  { subject: "Physics", text: "Formula sheets, concepts, PYQs and revision notes." },
-  { subject: "Chemistry", text: "Physical, organic and inorganic study packs." },
-  { subject: "Mathematics", text: "Problem sets for algebra, calculus and geometry." },
+const planItems = [
+  {
+    time: "08:00",
+    title: "Rotational Dynamics - Concept",
+    subject: "Physics",
+    done: true,
+  },
+  {
+    time: "10:30",
+    title: "Coordination Compounds - DPP",
+    subject: "Chemistry",
+    done: true,
+  },
+  {
+    time: "14:00",
+    title: "Definite Integration - Practice",
+    subject: "Math",
+    done: false,
+  },
+  {
+    time: "18:30",
+    title: "Mock Test #25 (Full Syllabus)",
+    subject: "Test",
+    done: false,
+  },
 ];
 
-const mockTests = [
-  { name: "JEE Main Full Test", detail: "Full syllabus timed mock" },
-  { name: "JEE Advanced Practice Test", detail: "Paper 1 + Paper 2 pattern" },
-  { name: "Chapter-wise Test", detail: "Targeted practice for weak chapters" },
+const bars = [
+  { day: "M", value: 58 },
+  { day: "T", value: 72 },
+  { day: "W", value: 64 },
+  { day: "T", value: 84 },
+  { day: "F", value: 76 },
+  { day: "S", value: 92 },
+  { day: "S", value: 89 },
 ];
 
 function Dashboard() {
   return (
-    <main className="student-dashboard">
-      <DashboardNavbar />
+    <main className="student-dashboard dashboard-home">
+      <section className="dashboard-hero-panel">
+        <div className="dashboard-hero-content">
+          <p className="dashboard-overline">Student Dashboard</p>
+          <h1>
+            Welcome back, <em>aspirant.</em>
+          </h1>
+          <p>Your discipline today decides your rank in May. Here&apos;s your snapshot.</p>
 
-      <div className="student-dashboard-inner">
-        <section className="student-hero">
-          <div>
-            <p className="eyebrow">Student Dashboard</p>
-            <h1>Welcome back, Student</h1>
-            <p>
-              Continue your JEE preparation journey with Valluri. Stay balanced
-              across Physics, Chemistry and Mathematics with guided practice,
-              mocks and revision.
-            </p>
+          <div className="dashboard-hero-actions">
+            <Link to="/dashboard/courses" className="dashboard-primary-action">
+              Continue Learning
+            </Link>
+            <Link to="/dashboard/adaptive-planner" className="dashboard-secondary-action">
+              View Today&apos;s Plan
+            </Link>
+          </div>
+        </div>
+      </section>
 
-            <div className="student-hero-actions">
-              <Link to="/courses" className="btn btn-primary">
-                <PlayCircle size={18} /> Continue Learning
-              </Link>
-              <Link to="/mock-test" className="btn btn-outline">
-                Take Mock Test
-              </Link>
+      <section className="dashboard-stat-grid" aria-label="Preparation summary">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <article className="dashboard-stat-card" key={stat.kicker}>
+              <div>
+                <p>{stat.kicker}</p>
+                <h2>{stat.title}</h2>
+                <span>{stat.detail}</span>
+              </div>
+              <Icon size={20} />
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="dashboard-workspace">
+        <div className="dashboard-main-column">
+          <article className="dashboard-plan-panel">
+            <div className="dashboard-panel-heading">
+              <div>
+                <p className="dashboard-overline">Today</p>
+                <h2>Your daily plan</h2>
+              </div>
+              <span>
+                <CalendarDays size={17} /> Mon, 12 Jun
+              </span>
             </div>
-          </div>
 
-          <aside className="student-focus-card">
-            <GraduationCap size={34} />
-            <span>Today&apos;s Focus</span>
-            <strong>PCM Balanced Practice</strong>
-            <p>One physics concept, one chemistry drill and one maths problem set.</p>
-          </aside>
-        </section>
-
-        <section className="dashboard-section" aria-labelledby="courses-heading">
-          <div className="dashboard-section-heading">
-            <div>
-              <p className="dashboard-label">My Courses</p>
-              <h2 id="courses-heading">Course progress</h2>
-            </div>
-            <Link to="/courses">View all courses</Link>
-          </div>
-
-          <div className="course-progress-grid">
-            {courses.map((course) => (
-              <article className="course-progress-card" key={course.name}>
-                <h3>{course.name}</h3>
-                <div className="course-progress-topline">
-                  <span>{course.progress}% complete</span>
-                  <Link to="/courses">Continue</Link>
-                </div>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${course.progress}%` }}
-                  ></div>
-                </div>
-                <div className="subject-tags">
-                  {course.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="quick-stats-grid" aria-label="Quick stats">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <article className="quick-stat-card" key={stat.label}>
-                <Icon size={22} />
-                <span>{stat.label}</span>
-                <strong>{stat.value}</strong>
-              </article>
-            );
-          })}
-        </section>
-
-        <section className="dashboard-split">
-
-          <article className="rank-mini-card">
-            <p className="dashboard-label">Results & Rank</p>
-            <h2>Check your predicted rank</h2>
-            <p>Use mock performance trends to estimate your current AIR band.</p>
-            <div className="rank-mini-actions">
-              <Link to="/results">View Results</Link>
-              <Link to="/rank-predictor">Predict Rank</Link>
+            <div className="dashboard-plan-list">
+              {planItems.map((item) => (
+                <Link
+                  className="dashboard-plan-row"
+                  key={`${item.time}-${item.title}`}
+                  to={item.subject === "Test" ? "/dashboard/mock-tests" : "/dashboard/courses"}
+                >
+                  <time>{item.time}</time>
+                  <span className={item.done ? "dashboard-plan-dot done" : "dashboard-plan-dot"}>
+                    {item.done ? "✓" : ""}
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.subject}</small>
+                  </span>
+                  <ChevronRight size={20} />
+                </Link>
+              ))}
             </div>
           </article>
-        </section>
 
-        <section className="dashboard-section" aria-labelledby="materials-heading">
-          <div className="dashboard-section-heading">
-            <div>
-              <p className="dashboard-label">Study Materials</p>
-              <h2 id="materials-heading">Subject-wise library</h2>
-            </div>
-          </div>
+          <article className="dashboard-performance-card">
+            <p className="dashboard-overline">Performance</p>
+            <h2>Snapshot · last 7 days</h2>
 
-          <div className="materials-dashboard-grid">
-            {materials.map((material) => (
-              <article className="material-dashboard-card" key={material.subject}>
-                <BookOpen size={24} />
-                <h3>{material.subject}</h3>
-                <p>{material.text}</p>
-                <Link to="/study-materials">View Materials</Link>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="dashboard-section" aria-labelledby="mock-heading">
-          <div className="dashboard-section-heading">
-            <div>
-              <p className="dashboard-label">Mock Tests</p>
-              <h2 id="mock-heading">Recommended tests</h2>
-            </div>
-            <Link to="/mock-test">Open test center</Link>
-          </div>
-
-          <div className="mock-dashboard-list">
-            {mockTests.map((test) => (
-              <article className="mock-dashboard-row" key={test.name}>
-                <Target size={22} />
-                <div>
-                  <h3>{test.name}</h3>
-                  <p>{test.detail}</p>
+            <div className="dashboard-bar-chart" aria-label="Last 7 days performance chart">
+              {bars.map((bar) => (
+                <div className="dashboard-bar-item" key={`${bar.day}-${bar.value}`}>
+                  <span style={{ height: `${bar.value}%` }}></span>
+                  <small>{bar.day}</small>
                 </div>
-                <Link to="/mock-test">Start</Link>
-              </article>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
 
-        <section className="dashboard-section profile-strip" id="profile">
-          <div>
-            <p className="dashboard-label">Profile</p>
-            <h2>Your Valluri learning path is active</h2>
-            <p>
-              Keep practising daily, take weekly mocks and revise every doubt before it becomes a weak topic.
-            </p>
-          </div>
-          <div className="profile-strip-actions">
-            <span>
-              <TrendingUp size={18} /> Weekly streak: 5 days
-            </span>
-            <span>
-              <MessageCircleQuestion size={18} /> Doubts reviewed: 42
-            </span>
-          </div>
-        </section>
-
-        <div className="page-policy-footer">
-          <FooterPolicyLinks />
+            <div className="dashboard-performance-stats">
+              <span>
+                Avg Accuracy
+                <strong>78.4%</strong>
+                <small>↗ +3.2%</small>
+              </span>
+              <span>
+                Avg Speed
+                <strong>48s/Q</strong>
+                <small>↗ -6s</small>
+              </span>
+              <span>
+                Rank Percentile
+                <strong>94.6</strong>
+                <small>↗ +1.1</small>
+              </span>
+            </div>
+          </article>
         </div>
-      </div>
+
+        <aside className="dashboard-side-column">
+          <article className="dashboard-mock-card">
+            <p className="dashboard-overline">Upcoming Mock</p>
+            <h2>Full Syllabus #25</h2>
+            <p>Tonight · 6:30 PM · 3 hours · 90 questions</p>
+            <ul>
+              <li>
+                Physics 30Q <strong>+4 marks</strong>
+              </li>
+              <li>
+                Chemistry 30Q <strong>+4 marks</strong>
+              </li>
+              <li>
+                Math 30Q <strong>+4 marks</strong>
+              </li>
+            </ul>
+            <Link to="/dashboard/mock-tests">Enter Test Hall</Link>
+          </article>
+
+          <article className="dashboard-continue-card">
+            <p className="dashboard-overline">Continue Learning</p>
+            <h2>Modern Physics - Photoelectric Effect</h2>
+            <span>Lecture 14 of 18 · 32 min remaining</span>
+            <div className="dashboard-course-progress">
+              <span></span>
+            </div>
+            <small>78% complete</small>
+            <Link to="/dashboard/courses">
+              <Play size={17} /> Resume
+            </Link>
+          </article>
+        </aside>
+      </section>
+
+      <footer className="dashboard-footer">© 2026 VALLURI™ IIT-JEE. All rights reserved.</footer>
     </main>
   );
 }

@@ -1,6 +1,7 @@
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { BarChart3, ChevronRight, Clock3, Trophy } from "lucide-react";
 import logo from "../assets/logo.png";
 
 const mockTests = [
@@ -67,7 +68,47 @@ const questions = [
   },
 ];
 
-function MockTest() {
+const dashboardMockTests = [
+  {
+    status: "Upcoming",
+    type: "Full Syllabus",
+    title: "Full Syllabus Mock #25",
+    time: "Tonight 6:30 PM",
+    action: "Enter Test",
+  },
+  {
+    status: "Upcoming",
+    type: "Chapter-wise",
+    title: "Rotational Dynamics - Chapter Test",
+    time: "Wed 4:00 PM",
+    action: "Enter Test",
+  },
+  {
+    status: "Attempted",
+    type: "Full Syllabus",
+    title: "Full Syllabus Mock #24",
+    meta: ["Score 248", "Rank #124", "Accuracy 82%", "2h 47m"],
+    highlighted: false,
+  },
+  {
+    status: "Attempted",
+    type: "Chapter-wise",
+    title: "Coordination Compounds Test",
+    meta: ["Score 78", "Rank #56", "Accuracy 88%", "44m"],
+    highlighted: false,
+  },
+  {
+    status: "Attempted",
+    type: "Full Syllabus",
+    title: "Full Syllabus Mock #23",
+    meta: ["Score 231", "Rank #187", "Accuracy 78%", "2h 51m"],
+    highlighted: true,
+  },
+];
+
+const dashboardFilters = ["All", "Upcoming", "Attempted", "Full Syllabus", "Chapter-wise"];
+
+function MockTest({ dashboardMode = false }: { dashboardMode?: boolean }) {
   const [showQuiz, setShowQuiz] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120);
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
@@ -185,6 +226,79 @@ function MockTest() {
     );
   }
 
+  if (dashboardMode) {
+    return (
+      <main className="mock-tests-page dashboard-mock-tests-page">
+        <section className="dashboard-mock-hero">
+          <p className="dashboard-overline">Mock Tests</p>
+          <h1>
+            Practice like <em>exam day.</em>
+          </h1>
+          <p>Real-clock simulations, deep analytics, and AIR-style ranking.</p>
+        </section>
+
+        <section className="dashboard-mock-catalog">
+          <div className="dashboard-mock-filters" aria-label="Mock test filters">
+            {dashboardFilters.map((filter, index) => (
+              <button className={index === 0 ? "active" : ""} key={filter} type="button">
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          <div className="dashboard-mock-list">
+            {dashboardMockTests.map((test) => {
+              const isUpcoming = test.status === "Upcoming";
+
+              return (
+                <article
+                  className={`dashboard-mock-row${test.highlighted ? " highlighted" : ""}`}
+                  key={test.title}
+                >
+                  <div className="dashboard-mock-row-content">
+                    <div className="dashboard-mock-row-tags">
+                      <span className={isUpcoming ? "upcoming" : "attempted"}>
+                        {test.status}
+                      </span>
+                      <strong>{test.type}</strong>
+                    </div>
+
+                    <h2>{test.title}</h2>
+
+                    {isUpcoming ? (
+                      <p>
+                        <Clock3 size={16} /> {test.time}
+                      </p>
+                    ) : (
+                      <div className="dashboard-mock-meta">
+                        <Trophy size={16} />
+                        {test.meta?.map((item) => (
+                          <span key={item}>{item}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {isUpcoming ? (
+                    <button type="button" className="dashboard-mock-primary" onClick={startPractice}>
+                      {test.action}
+                    </button>
+                  ) : (
+                    <button type="button" className="dashboard-mock-analysis">
+                      <BarChart3 size={17} /> View Analysis <ChevronRight size={18} />
+                    </button>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <footer className="dashboard-footer">© 2026 VALLURI™ IIT-JEE. All rights reserved.</footer>
+      </main>
+    );
+  }
+
   return (
     <main className="mock-tests-page">
       <section className="courses-hero">
@@ -221,7 +335,7 @@ function MockTest() {
         </div>
       </section>
 
-      <footer className="contact-footer">
+      {!dashboardMode && <footer className="contact-footer">
         <div className="contact-footer-inner">
           <div className="contact-footer-brand">
             <Link to="/" className="footer-brand">
@@ -244,7 +358,7 @@ function MockTest() {
             <ul>
               {programLinks.map((program) => (
                 <li key={program}>
-                  <Link to="/courses">{program}</Link>
+                  <Link to={dashboardMode ? "/dashboard/courses" : "/courses"}>{program}</Link>
                 </li>
               ))}
             </ul>
@@ -268,7 +382,7 @@ function MockTest() {
           <p>© 2026 VALLURI™ Learning Systems. All rights reserved.</p>
           <FooterPolicyLinks />
         </div>
-      </footer>
+      </footer>}
     </main>
   );
 }

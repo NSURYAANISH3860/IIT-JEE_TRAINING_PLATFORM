@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 
 interface Message {
   role: "user" | "assistant";
@@ -148,6 +149,7 @@ function ThinkingDots() {
 // ── Widget ────────────────────────────────────────────────────────────────────
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [position, setPosition] = useState({ right: 26, bottom: 26 });
   const [messages, setMessages] = useState<Message[]>([{
     role: "assistant",
     content: "Hey! 👋 I'm your AI study assistant. Ask me any doubt about your exam prep — concepts, formulas, strategy, anything!",
@@ -156,6 +158,15 @@ export default function ChatbotWidget() {
   const [isThinking, setIsThinking] = useState(false);
   const [nudge, setNudge] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({
+    active: false,
+    moved: false,
+    pointerId: 0,
+    startX: 0,
+    startY: 0,
+    startRight: 26,
+    startBottom: 26,
+  });
 
   useEffect(() => {
     if (isOpen) return;
@@ -172,6 +183,10 @@ export default function ChatbotWidget() {
       localStorage.removeItem("open_chatbot");
     }
 
+    function openChatbot() {
+      setIsOpen(true);
+    }
+
     function handleStorage(event: StorageEvent) {
       if (event.key === "open_chatbot" && event.newValue === "1") {
         setIsOpen(true);
@@ -179,13 +194,73 @@ export default function ChatbotWidget() {
       }
     }
 
+    window.addEventListener("open-chatbot", openChatbot);
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    return () => {
+      window.removeEventListener("open-chatbot", openChatbot);
+      window.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
+
+  function clampWidgetPosition(nextRight: number, nextBottom: number) {
+    if (typeof window === "undefined") {
+      return { right: nextRight, bottom: nextBottom };
+    }
+
+    const maxRight = Math.max(8, window.innerWidth - 86);
+    const maxBottom = Math.max(8, window.innerHeight - 86);
+    return {
+      right: Math.min(Math.max(8, nextRight), maxRight),
+      bottom: Math.min(Math.max(8, nextBottom), maxBottom),
+    };
+  }
+
+  function startDrag(event: ReactPointerEvent<HTMLElement>) {
+    if (event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("input, textarea, select, button.qb-send")) return;
+
+    dragRef.current = {
+      active: true,
+      moved: false,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startRight: position.right,
+      startBottom: position.bottom,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveDrag(event: ReactPointerEvent<HTMLElement>) {
+    const drag = dragRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      dragRef.current.moved = true;
+    }
+
+    setPosition(clampWidgetPosition(drag.startRight - deltaX, drag.startBottom - deltaY));
+  }
+
+  function stopDrag(event: ReactPointerEvent<HTMLElement>) {
+    const drag = dragRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId) return;
+
+    dragRef.current.active = false;
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    } catch {
+      // Pointer capture may already be released by the browser.
+    }
+  }
 
   async function send() {
     const text = input.trim();
@@ -254,7 +329,19 @@ export default function ChatbotWidget() {
         ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: rgba(242,185,31,0.3); border-radius: 4px; }
       `}</style>
 
-      <div style={{ position: "fixed", bottom: 26, right: 26, zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+      <div
+        style={{
+          position: "fixed",
+          bottom: position.bottom,
+          right: position.right,
+          zIndex: 9999,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: 10,
+          touchAction: "none",
+        }}
+      >
 
         {/* Tooltip */}
         {!isOpen && (
@@ -291,13 +378,21 @@ export default function ChatbotWidget() {
           }}>
 
             {/* Header */}
-            <div style={{
+            <div
+              onPointerDown={startDrag}
+              onPointerMove={moveDrag}
+              onPointerUp={stopDrag}
+              onPointerCancel={stopDrag}
+              style={{
               background: `linear-gradient(135deg, #0d0800 0%, #1a1000 50%, #0d0800 100%)`,
               borderBottom: `1px solid rgba(242,185,31,0.3)`,
               padding: "11px 14px",
               display: "flex",
               alignItems: "center",
               gap: 11,
+              cursor: "grab",
+              userSelect: "none",
+              touchAction: "none",
             }}>
               <div style={{ width: 46, height: 46, flexShrink: 0 }}>
                 <RobotFace isThinking={isThinking} size={46} />
@@ -317,7 +412,10 @@ export default function ChatbotWidget() {
                   <span style={{ color: G.textMuted, fontSize: 11 }}>Online · QuantumAI</span>
                 </div>
               </div>
-              <button onClick={() => setIsOpen(false)} style={{
+              <button
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => setIsOpen(false)}
+                style={{
                 background: "rgba(242,185,31,0.08)",
                 border: `1px solid rgba(242,185,31,0.2)`,
                 borderRadius: "50%",
@@ -440,7 +538,17 @@ export default function ChatbotWidget() {
         {/* FAB */}
         <button
           className="qb-fab-btn"
-          onClick={() => setIsOpen(o => !o)}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={stopDrag}
+          onPointerCancel={stopDrag}
+          onClick={() => {
+            if (dragRef.current.moved) {
+              dragRef.current.moved = false;
+              return;
+            }
+            setIsOpen(o => !o);
+          }}
           style={{
             width: 64, height: 64,
             borderRadius: "50%",
@@ -455,6 +563,7 @@ export default function ChatbotWidget() {
             transition: "transform 0.2s",
             position: "relative",
             animation: nudge ? "qb-nudge 0.65s ease" : undefined,
+            touchAction: "none",
           }}
         >
           {/* Pulse ring */}
