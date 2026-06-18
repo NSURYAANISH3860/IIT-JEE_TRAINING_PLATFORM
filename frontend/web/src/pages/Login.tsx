@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
+import { api } from "../services/api";
 
 type LoginProps = {
   initialMode?: "login" | "signup";
@@ -18,24 +19,6 @@ function Login({ initialMode = "login" }: LoginProps) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function loginStudent(loginEmail: string, loginPassword: string) {
-    localStorage.setItem("access_token", "local_access_token");
-
-    const existingUser = localStorage.getItem("current_user");
-    if (!existingUser) {
-      const defaultName = loginEmail.split("@")[0] || "Student";
-      localStorage.setItem(
-        "current_user",
-        JSON.stringify({
-          name: defaultName,
-          email: loginEmail,
-          class_level: "",
-          target_exam: "",
-        }),
-      );
-    }
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -43,18 +26,28 @@ function Login({ initialMode = "login" }: LoginProps) {
 
     try {
       if (isSignup) {
-        localStorage.setItem(
-          "current_user",
-          JSON.stringify({
-            name,
-            email,
-            class_level: classLevel,
-            target_exam: targetExam,
-          }),
-        );
+        // Sign up the user
+        const signupResponse = await api.signup(name, email, password, classLevel, targetExam);
+        
+        // Store user data
+        localStorage.setItem("current_user", JSON.stringify(signupResponse.user));
       }
 
-      loginStudent(email, password);
+      // Login to get token
+      const loginResponse = await api.login(email, password);
+      
+      // Store the access token
+      localStorage.setItem("access_token", loginResponse.access_token);
+      
+      // Fetch and store current user data
+      const currentUser = await api.getCurrentUser();
+      localStorage.setItem("current_user", JSON.stringify(currentUser));
+      
+      // Initialize activity array
+      if (!localStorage.getItem("user_activities")) {
+        localStorage.setItem("user_activities", JSON.stringify([]));
+      }
+
       window.dispatchEvent(new Event("auth-change"));
       navigate("/dashboard");
     } catch (requestError) {

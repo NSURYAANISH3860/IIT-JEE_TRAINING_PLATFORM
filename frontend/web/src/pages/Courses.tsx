@@ -1,6 +1,9 @@
+import { useState } from "react";
+import { ArrowRight, CalendarDays, Check, Play, ShieldCheck, UserRound } from "lucide-react";
 import FooterPolicyLinks from "../components/FooterPolicyLinks";
 import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, Check, Play, ShieldCheck, UserRound } from "lucide-react";
+import VirtualTeacher from "../components/VirtualTeacher";
+import { api } from "../services/api";
 import logo from "../assets/logo.png";
 
 const courses = [
@@ -64,6 +67,8 @@ const activeCourses = [
     activeTill: "Active till May 2026",
     progress: 62,
     featured: true,
+    subject: "Physics",
+    topic: "Modern Physics",
   },
   {
     label: "Self-Paced",
@@ -72,6 +77,8 @@ const activeCourses = [
     nextClass: "Tomorrow · 9:00 AM · Coordination",
     activeTill: "Active till Dec 2026",
     progress: 41,
+    subject: "Chemistry",
+    topic: "Coordination Compounds",
   },
 ];
 
@@ -91,12 +98,48 @@ const recommendedCourses = [
 ];
 
 function Courses({ dashboardMode = false }: { dashboardMode?: boolean }) {
+  const [selectedTeacherTopic, setSelectedTeacherTopic] = useState<{
+    subject: string;
+    topic: string;
+  } | null>(null);
+
   const coursesPath = dashboardMode ? "/dashboard/courses" : "/courses";
   const mockTestsPath = dashboardMode ? "/dashboard/mock-tests" : "/mock-test";
+
+  const handleWatchClass = async (course: any) => {
+    try {
+      await api.saveStudentSelection(course.subject, course.topic);
+    } catch (error) {
+      console.error("Failed to save course selection:", error);
+    }
+
+    try {
+      await api.logActivity({
+        type: "course",
+        title: course.title,
+        subject: course.subject,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Failed to log activity:", error);
+    }
+
+    if (course.subject && course.topic) {
+      setSelectedTeacherTopic({ subject: course.subject, topic: course.topic });
+    }
+  };
 
   if (dashboardMode) {
     return (
       <main className="courses-page dashboard-courses-page">
+        {selectedTeacherTopic && (
+          <VirtualTeacher
+            subject={selectedTeacherTopic.subject}
+            topic={selectedTeacherTopic.topic}
+            onClose={() => setSelectedTeacherTopic(null)}
+          />
+        )}
+
         <section className="courses-hero dashboard-courses-hero">
           <p className="dashboard-overline">My Courses</p>
           <h1>
@@ -161,9 +204,23 @@ function Courses({ dashboardMode = false }: { dashboardMode?: boolean }) {
                   <span style={{ width: `${course.progress}%` }}></span>
                 </div>
 
-                <Link className="dashboard-course-continue" to="/dashboard/courses">
-                  <Play size={17} /> Continue
-                </Link>
+                <button 
+                  className="dashboard-course-continue" 
+                  onClick={() => handleWatchClass(course)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "0",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    width: "100%"
+                  }}
+                >
+                  <Play size={17} /> Watch Class
+                </button>
               </article>
             ))}
           </div>
@@ -263,14 +320,23 @@ function Courses({ dashboardMode = false }: { dashboardMode?: boolean }) {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  to={mockTestsPath}
-                  className={
-                    course.featured ? "course-enroll-btn" : "course-enroll-btn-dark"
-                  }
-                >
-                  Enroll Now
-                </Link>
+                <div className="course-card-actions">
+                  <button
+                    type="button"
+                    className={
+                      course.featured ? "course-enroll-btn" : "course-enroll-btn-dark"
+                    }
+                    onClick={() => handleWatchClass(course)}
+                  >
+                    Start Class
+                  </button>
+                  <Link
+                    to={mockTestsPath}
+                    className="course-secondary-btn"
+                  >
+                    Enroll & Practice
+                  </Link>
+                </div>
               </article>
             ))}
           </div>

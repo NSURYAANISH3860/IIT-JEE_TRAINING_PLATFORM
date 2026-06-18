@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
+import { api } from "../services/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -270,26 +271,11 @@ export default function ChatbotWidget() {
     setInput("");
     setIsThinking(true);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: `You are an AI study assistant for QuantumAI Mock Tests — a platform for competitive exam preparation (JEE, NEET, UPSC, CAT, etc.).
-- Answer academic doubts clearly and concisely
-- Help with concepts, formulas, problem-solving, and exam strategy
-- Be friendly, direct, and encouraging
-- Use plain language; occasional emojis are fine
-- Keep answers under 150 words unless the question genuinely needs depth`,
-          messages: hist.map(m => ({ role: m.role, content: m.content })),
-        }),
-      });
-      const data = await res.json();
-      const reply = data.content?.find((b: { type: string }) => b.type === "text")?.text
-        || "Something went wrong. Please try again!";
+      const data = await api.chat(text);
+      const reply = data.reply || "Something went wrong. Please try again!";
       setMessages(p => [...p, { role: "assistant", content: reply }]);
-    } catch {
+    } catch (error) {
+      console.error("Chat request failed:", error);
       setMessages(p => [...p, { role: "assistant", content: "Connection error. Check your internet and retry. 🔌" }]);
     } finally {
       setIsThinking(false);

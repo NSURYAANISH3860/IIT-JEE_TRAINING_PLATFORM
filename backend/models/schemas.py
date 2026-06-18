@@ -101,3 +101,21 @@ class ProgressSummary(BaseModel):
     recent_attempts: List[ExamAttemptOut]
     subject_accuracy: dict[str, float]
     weak_topics: dict[str, float]
+
+
+class UserActivityCreate(BaseModel):
+    activity_type: str = Field(..., min_length=2)
+    title: str = Field(..., min_length=2)
+    subject: str = Field(..., min_length=2)
+    duration_seconds: Optional[int] = None
+    score: Optional[float] = None
+
+
+class UserActivityOut(BaseModel):
+    id: str
+    activity_type: str
+    title: str
+    subject: str
+    duration_seconds: Optional[int]
+    score: Optional[float]
+    created_at: datetime

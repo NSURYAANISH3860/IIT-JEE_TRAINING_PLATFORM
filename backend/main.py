@@ -1,55 +1,93 @@
-import os
-
-from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session
+from contextlib import asynccontextmanager
+import os
+from dotenv import load_dotenv
+from sqlmodel import Session, select, SQLModel
 
-from db import create_db_and_tables, engine
-from routes.admin import router as admin_router
-from routes.auth import router as auth_router
-from routes.exam import router as exam_router
-from routes.progress import router as progress_router
-from routes.student import router as student_router
-from storage import create_default_questions
-
+# Import routes
+from backend.routes import auth, exams, progress, admin, video_sessions
+# Import models
+from backend.models.models import User, Question, ExamAttempt
+from backend.models.video_session import VideoSession, LiveDoubtSession, AITeachingSession
+from backend.db import engine, get_session
+from backend.storage import Storage
 
 load_dotenv()
 
+# Startup event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    SQLModel.metadata.create_all(engine)
+    
+    # Seed initial data if database is empty
+    session = Session(engine)
+    try:
+        existing_questions = session.exec(select(Question)).first()
+        if not existing_questions:
+            storage = Storage()
+            storage.seed_questions()
+    finally:
+        session.close()
+    
+    yield
+    # Shutdown (if needed)
+
+
+# Create FastAPI app
 app = FastAPI(
-    title="Quantum AI IIT JEE Backend",
-    description="Backend for Quantum AI IIT JEE Mock Tests with authentication, exams, and progress tracking.",
+    title="VALLURI™ - Quantum AI IIT JEE Mock Tests",
+    description="Next-generation agentic AI-powered mock testing and personalized coaching platform",
     version="1.0.0",
+    lifespan=lifespan
 )
 
+# CORS configuration
 allowed_origins = os.getenv(
     "ALLOWED_ORIGINS",
-    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173",
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origin.strip() for origin in allowed_origins if origin.strip()],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth_router)
-app.include_router(student_router)
-app.include_router(exam_router)
-app.include_router(progress_router)
-app.include_router(admin_router)
+# Include routers
+app.include_router(auth.router)
+app.include_router(exams.router)
+app.include_router(progress.router)
+app.include_router(admin.router)
+app.include_router(video_sessions.router)
 
-
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
-    with Session(engine) as session:
-        create_default_questions(session)
-
-
+# Health check endpoint
 @app.get("/")
-def health_check():
-    return {"message": "Quantum AI IIT JEE Backend is running"}
+def read_root():
+    return {
+        "message": "Welcome to VALLURI™ - Quantum AI IIT JEE Mock Tests",
+        "status": "Server is running",
+        "version": "1.0.0",
+        "features": [
+            "Mock Testing Engine",
+            "Video Lessons with Progress Tracking",
+            "1:1 Live Doubt Resolution",
+            "Virtual AI Teaching Agent",
+            "Performance Analytics",
+            "Rank Predictor"
+        ]
+    }
 
+@app.get("/api/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "message": "All systems operational"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
 from db import get_session
-from models.schemas import StudentSelection
+from models.schemas import StudentSelection, UserActivityCreate, UserActivityOut
 from routes.dependencies import get_current_user
-from storage import get_user_by_email, update_student_selection
+from storage import get_user_by_email, update_student_selection, create_user_activity, get_user_activities
 
 router = APIRouter(prefix="/api/student", tags=["Student"])
 
@@ -41,3 +41,35 @@ def get_student_selection(
         "selected_subject": user.selected_subject,
         "selected_topic": user.selected_topic,
     }
+
+
+@router.post("/activity")
+def log_activity(
+    activity_data: UserActivityCreate,
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    activity = create_user_activity(
+        session,
+        current_user.id,
+        activity_data.activity_type,
+        activity_data.title,
+        activity_data.subject,
+        activity_data.duration_seconds,
+        activity_data.score,
+    )
+
+    return {
+        "message": "Activity logged successfully",
+        "activity": UserActivityOut.from_orm(activity),
+    }
+
+
+@router.get("/activities", response_model=list[UserActivityOut])
+def get_activities(
+    limit: int = 50,
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    activities = get_user_activities(session, current_user.id, limit)
+    return [UserActivityOut.from_orm(activity) for activity in activities]

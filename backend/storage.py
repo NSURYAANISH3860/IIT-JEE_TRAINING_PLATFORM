@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
-from models.db_models import ExamAttempt, Question, User
+from models.db_models import ExamAttempt, Question, User, UserActivity
 from models.schemas import QuestionCreate, QuestionUpdate
 
 
@@ -250,3 +250,42 @@ def create_default_questions(session: Session) -> None:
     ]
     session.add_all(sample_questions)
     session.commit()
+
+
+def create_user_activity(
+    session: Session,
+    user_id: str,
+    activity_type: str,
+    title: str,
+    subject: str,
+    duration_seconds: int | None = None,
+    score: float | None = None,
+    extra_info: dict[str, Any] | None = None,
+) -> UserActivity:
+    activity = UserActivity(
+        user_id=user_id,
+        activity_type=activity_type,
+        title=title,
+        subject=subject,
+        duration_seconds=duration_seconds,
+        score=score,
+        extra_info=extra_info or {},
+    )
+    session.add(activity)
+    session.commit()
+    session.refresh(activity)
+    return activity
+
+
+def get_user_activities(
+    session: Session,
+    user_id: str,
+    limit: int = 50,
+) -> list[UserActivity]:
+    statement = (
+        select(UserActivity)
+        .where(UserActivity.user_id == user_id)
+        .order_by(UserActivity.created_at.desc())
+        .limit(limit)
+    )
+    return session.exec(statement).all()

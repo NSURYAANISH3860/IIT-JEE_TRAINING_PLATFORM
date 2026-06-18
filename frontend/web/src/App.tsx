@@ -53,28 +53,6 @@ function DashboardRoute({ children }: { children: ReactElement }) {
   );
 }
 
-function DashboardUtilityPage({
-  eyebrow,
-  title,
-  text,
-}: {
-  eyebrow: string;
-  title: string;
-  text: string;
-}) {
-  return (
-    <main className="student-dashboard">
-      <div className="student-dashboard-inner">
-        <section className="dashboard-section dashboard-utility-page">
-          <p className="dashboard-label">{eyebrow}</p>
-          <h1>{title}</h1>
-          <p>{text}</p>
-        </section>
-      </div>
-    </main>
-  );
-}
-
 function AppShell() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
