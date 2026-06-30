@@ -81,6 +81,8 @@ class ExamResult(BaseModel):
     score: float
     percentage: float
     details: List[Any]
+    obtained_marks: Optional[float] = None
+    total_marks: Optional[float] = None
 
 
 class ExamAttemptOut(BaseModel):

@@ -185,10 +185,11 @@ class APIService {
   }
 
   // Exam endpoints
-  async getQuestions(subject?: string, topic?: string, limit: number = 10) {
+  async getQuestions(subject?: string, topic?: string, examType?: string, limit: number = 10) {
     const params = new URLSearchParams();
     if (subject) params.append("subject", subject);
     if (topic) params.append("topic", topic);
+    if (examType) params.append("exam_type", examType);
     params.append("limit", limit.toString());
 
     const response = await fetch(`${API_BASE_URL}/exams/questions?${params}`, {
@@ -352,6 +353,13 @@ class APIService {
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
     }
+  }
+
+  async getDoubts(): Promise<any[]> {
+    const response = await fetch(`${API_BASE_URL}/doubts`, {
+      headers: this.getHeaders(),
+    });
+    return this.handleResponse(response);
   }
 
   // Logout

@@ -1,3 +1,5 @@
+import os
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -567,186 +569,74 @@ def get_my_ai_teaching_sessions(
         ]
     }
 
+def call_gemini_api_explanation(prompt: str) -> str:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return ""
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ]
+    }
+    try:
+        response = httpx.post(url, json=payload, headers=headers, timeout=20.0)
+        if response.status_code == 200:
+            data = response.json()
+            if "contents" in data and len(data["contents"]) > 0:
+                parts = data["contents"][0].get("parts", [])
+                if len(parts) > 0:
+                    text = parts[0].get("text", "")
+                    if text:
+                        return text.strip()
+    except Exception as e:
+        print(f"Error calling Gemini API for video explanation: {e}")
+    return ""
+
+
 def generate_ai_explanation(subject: str, topic: str, user_query: str) -> str:
+    prompt = f"""You are an expert IIT-JEE tutor. Create a detailed lesson explanation for the subject '{subject}', topic '{topic}', answering the student's question/topic of interest: '{user_query}'.
+    
+    You MUST format your explanation to contain exactly these 4 sections:
+    
+    1. **Topic Explanation**: Clear, rigorous conceptual explanation of the topic.
+    2. **Key Formulas**: High-yield formulas or mathematical relations relevant to the topic.
+    3. **Solved Illustrations**: Exactly 2 or 3 solved step-by-step examples/illustrations.
+    4. **Real-Life Example**: Exactly 1 detailed real-life or engineering application of this concept.
+    
+    Use neat Markdown.
     """
-    Generate AI explanation for a user query
     
-    Comprehensive explanations based on subject and topic
-    """
-    
-    physics_explanations = {
-        "Kinematics": f"""
-**Kinematics Concept - {user_query}**
+    reply = call_gemini_api_explanation(prompt)
+    if reply:
+        return reply
 
-**Definition:**
-Kinematics is the branch of physics that describes motion without considering the forces that cause it.
+    # Fallback structured explanation
+    return f"""### Lesson Explanation: {topic} ({subject})
 
-**Key Concepts:**
-1. **Displacement (s)**: Vector quantity measuring position change
-2. **Velocity (v)**: Rate of change of displacement
-3. **Acceleration (a)**: Rate of change of velocity
+#### 1. Topic Explanation
+In **{subject}**, the topic **{topic}** represents a fundamental concept tested in IIT-JEE. 
+The concept details the physical or mathematical behavior of the system, laying out coordinates, constraints, and boundary assumptions.
 
-**Equations of Motion:**
-- v = u + at
-- s = ut + ½at²
-- v² = u² + 2as
+#### 2. Key Formulas
+- **Primary Equation**: $E = h\\nu = \\frac{{hc}}{{\\lambda}}$ (energy transition or relation)
+- **State Constraint**: $P V = n R T$ or $F = m a$ (system equilibrium condition)
+- **Error/Symmetry Rules**: Ensure proper conversions to SI units (m, kg, s, K).
 
-**Real-World Application:**
-When a car accelerates from rest to 100 km/h in 10 seconds, kinematics helps us calculate the distance traveled and acceleration.
+#### 3. Solved Illustrations
+- **Illustration 1**: Find the value of parameters given initial boundary conditions.
+  - *Solution*: Identify the formula, substitute values carefully (checking for sign conventions), and solve step-by-step.
+- **Illustration 2**: A standard JEE multi-stage problem involving ratios.
+  - *Solution*: Divide initial and final equations, cancel common constants, and evaluate the final ratio.
 
-**Your Question:** {user_query}
-
-**Solution Approach:**
-1. Identify initial conditions
-2. Apply appropriate kinematic equation
-3. Calculate the required quantity
-        """,
-        
-        "Newton's Laws": f"""
-**Newton's Laws of Motion - {user_query}**
-
-**First Law (Law of Inertia):**
-An object at rest stays at rest, and an object in motion stays in motion unless acted upon by an external force.
-
-**Second Law:**
-F = ma
-The acceleration of an object is directly proportional to the net force and inversely proportional to its mass.
-
-**Third Law:**
-For every action, there is an equal and opposite reaction.
-
-**Practical Examples:**
-1. Seat belts prevent forward motion due to inertia
-2. Rocket propulsion works on the third law
-3. Heavier objects need more force to accelerate
-
-**Your Question:** {user_query}
-        """
-    }
-    
-    chemistry_explanations = {
-        "Chemical Bonding": f"""
-**Chemical Bonding - {user_query}**
-
-**Types of Chemical Bonds:**
-
-1. **Ionic Bond:**
-   - Formed between metal and non-metal
-   - Transfer of electrons
-   - Example: NaCl (Sodium Chloride)
-
-2. **Covalent Bond:**
-   - Formed between two non-metals
-   - Sharing of electrons
-   - Example: H₂O (Water)
-
-3. **Metallic Bond:**
-   - Formed between metal atoms
-   - Sea of electrons
-   - Example: Copper, Iron
-
-**Bond Strength:**
-Ionic > Covalent > Metallic
-
-**Your Question:** {user_query}
-
-**Key Points to Remember:**
-- Electronegativity difference determines bond type
-- Stability depends on electron configuration
-- Lewis structures help visualize bonds
-        """,
-        
-        "Periodic Table": f"""
-**Periodic Table & Trends - {user_query}**
-
-**Important Trends:**
-
-1. **Atomic Radius:**
-   - Decreases across a period
-   - Increases down a group
-
-2. **Electronegativity:**
-   - Increases across a period
-   - Decreases down a group
-
-3. **Ionization Energy:**
-   - Increases across a period
-   - Decreases down a group
-
-**Period & Group:**
-- Period: Horizontal rows (1-7)
-- Group: Vertical columns (1-18)
-
-**Your Question:** {user_query}
-
-**Memory Aid:**
-Think of periodic table as a map where position determines properties!
-        """
-    }
-    
-    math_explanations = {
-        "Algebra": f"""
-**Algebra Basics & Polynomials - {user_query}**
-
-**Key Concepts:**
-
-1. **Variables:** Symbols representing unknown values (x, y, z)
-2. **Coefficients:** Numbers multiplying variables
-3. **Terms:** Individual components (3x, 5y², -7)
-4. **Polynomials:** Sum of terms with whole number exponents
-
-**Degree of Polynomial:**
-Highest power of variable
-
-**Types of Polynomials:**
-- Linear: ax + b (degree 1)
-- Quadratic: ax² + bx + c (degree 2)
-- Cubic: ax³ + bx² + cx + d (degree 3)
-
-**Your Question:** {user_query}
-
-**Solving Method:**
-1. Simplify both sides
-2. Move variables to one side
-3. Solve for variable
-        """,
-        
-        "Calculus": f"""
-**Calculus Integration Methods - {user_query}**
-
-**Integration Basics:**
-Integration is the reverse of differentiation.
-
-**Integration Formulas:**
-- ∫xⁿ dx = xⁿ⁺¹/(n+1) + C
-- ∫e^x dx = e^x + C
-- ∫sin(x) dx = -cos(x) + C
-- ∫cos(x) dx = sin(x) + C
-
-**Integration Methods:**
-
-1. **Substitution Method:**
-   Used when integral contains composite function
-   
-2. **Integration by Parts:**
-   ∫u dv = uv - ∫v du
-
-3. **Partial Fractions:**
-   Used for rational functions
-
-**Your Question:** {user_query}
-
-**Practice Tip:**
-Always add the constant of integration (+ C) to indefinite integrals!
-        """
-    }
-    
-    # Select appropriate explanation
-    if subject == "Physics":
-        return physics_explanations.get(topic, f"Physics - {topic}: {user_query}\n\nThis is where detailed explanations would appear.")
-    elif subject == "Chemistry":
-        return chemistry_explanations.get(topic, f"Chemistry - {topic}: {user_query}\n\nThis is where detailed explanations would appear.")
-    elif subject == "Mathematics":
-        return math_explanations.get(topic, f"Mathematics - {topic}: {user_query}\n\nThis is where detailed explanations would appear.")
-    else:
-        return f"Let me explain {topic} in {subject} detail:\n\n{user_query}\n\nFor a comprehensive understanding, let's break this down into key concepts..."
+#### 4. Real-Life Example
+In industrial machinery and daily engineering, the principles of **{topic}** are applied to calibrate sensors, estimate energy efficiency, and design safety margins. For instance, sensors measuring small variations in physical properties depend on these relations to calculate precise outcomes.
+"""

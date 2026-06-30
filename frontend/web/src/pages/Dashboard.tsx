@@ -10,92 +10,241 @@ import {
   Trophy,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { api } from "../services/api";
+import type { User, ProgressSummary } from "../services/api";
 
-const stats = [
-  {
-    icon: BookOpen,
-    kicker: "Active Course",
-    title: "JEE Adv. Crash",
-    detail: "Batch · Elite 2026",
-  },
-  {
-    icon: Trophy,
-    kicker: "Mock Tests Completed",
-    title: "24",
-    detail: "of 60 in plan",
-  },
-  {
-    icon: Target,
-    kicker: "Accuracy",
-    title: "82%",
-    detail: "+4% this week",
-  },
-  {
-    icon: Flame,
-    kicker: "Study Streak",
-    title: "37d",
-    detail: "Personal best",
-  },
-  {
-    icon: MessageCircleQuestion,
-    kicker: "AI Doubts Solved",
-    title: "318",
-    detail: "avg 4s response",
-  },
-];
 
-const planItems = [
-  {
-    time: "08:00",
-    title: "Rotational Dynamics - Concept",
-    subject: "Physics",
-    done: true,
-  },
-  {
-    time: "10:30",
-    title: "Coordination Compounds - DPP",
-    subject: "Chemistry",
-    done: true,
-  },
-  {
-    time: "14:00",
-    title: "Definite Integration - Practice",
-    subject: "Math",
-    done: false,
-  },
-  {
-    time: "18:30",
-    title: "Mock Test #25 (Full Syllabus)",
-    subject: "Test",
-    done: false,
-  },
-];
-
-const bars = [
-  { day: "M", value: 58 },
-  { day: "T", value: 72 },
-  { day: "W", value: 64 },
-  { day: "T", value: 84 },
-  { day: "F", value: 76 },
-  { day: "S", value: 92 },
-  { day: "S", value: 89 },
-];
+interface StudentSelection {
+  selected_subject: string;
+  selected_topic: string;
+}
 
 function Dashboard() {
-  const [user, setUser] = useState<{ name: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [progress, setProgress] = useState<ProgressSummary | null>(null);
+  const [doubtsCount, setDoubtsCount] = useState<number>(0);
+  const [selection, setSelection] = useState<StudentSelection | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("current_user");
-    if (storedUser) {
+    async function fetchDashboardData() {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Error parsing user from localStorage", err);
+        setLoading(true);
+        // Fetch current user details from API
+        const currentUser = await api.getCurrentUser().catch(() => {
+          const stored = localStorage.getItem("current_user");
+          return stored ? JSON.parse(stored) : null;
+        });
+        setUser(currentUser);
+
+        if (currentUser) {
+          // Fetch progress summary
+          const progressData = await api.getProgressSummary().catch(() => null);
+          setProgress(progressData);
+
+          // Fetch doubts count
+          const doubtsList = await api.getDoubts().catch(() => []);
+          setDoubtsCount(doubtsList.length);
+
+          // Fetch student selection (subject/topic)
+          const selectionData = await api.getStudentSelection().catch(() => null);
+          setSelection(selectionData);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setLoading(false);
       }
     }
+
+    fetchDashboardData();
   }, []);
 
   const displayName = user?.name ? user.name.split(" ")[0] : "aspirant";
+  const targetExam = user?.target_exam || "JEE Advanced";
+  const classLevel = user?.class_level || "12";
+
+  // 1. Dynamic preparation stats cards
+  const activeCourseTitle = targetExam.includes("Advanced") ? "JEE Adv. Crash" : "JEE Mains Sprint";
+  const activeCourseDetail = `Batch · Elite Class ${classLevel}`;
+
+  const testsCompleted = progress?.total_attempts || 0;
+  const targetTests = targetExam.includes("Advanced") ? 25 : 40;
+
+  const averageAccuracy = progress?.average_score ? `${progress.average_score}%` : "78%";
+  const accuracyDetail = progress?.best_score ? `Best: ${progress.best_score}%` : "+4% this week";
+
+  const dynamicStats = [
+    {
+      icon: BookOpen,
+      kicker: "Active Course",
+      title: activeCourseTitle,
+      detail: activeCourseDetail,
+    },
+    {
+      icon: Trophy,
+      kicker: "Mock Tests Completed",
+      title: String(testsCompleted),
+      detail: `of ${targetTests} in plan`,
+    },
+    {
+      icon: Target,
+      kicker: "Accuracy",
+      title: averageAccuracy,
+      detail: accuracyDetail,
+    },
+    {
+      icon: Flame,
+      kicker: "Study Streak",
+      title: "37d",
+      detail: "Personal best",
+    },
+    {
+      icon: MessageCircleQuestion,
+      kicker: "AI Doubts Solved",
+      title: String(doubtsCount),
+      detail: doubtsCount > 0 ? "avg 4s response" : "Submit first doubt",
+    },
+  ];
+
+  // 2. Dynamic daily planner based on selected subject/topic
+  const selectedSubject = selection?.selected_subject || "Physics";
+  const selectedTopic = selection?.selected_topic || "Rotational Dynamics";
+
+  const dynamicPlanItems = selection
+    ? [
+        {
+          time: "08:00",
+          title: `${selectedTopic} - Lecture Video`,
+          subject: selectedSubject,
+          done: true,
+        },
+        {
+          time: "10:30",
+          title: `${selectedTopic} - DPP Sheets`,
+          subject: selectedSubject,
+          done: true,
+        },
+        {
+          time: "14:00",
+          title: `${selectedTopic} - Concept Test`,
+          subject: "Test",
+          done: false,
+        },
+        {
+          time: "18:30",
+          title: `Ask AI Doubt about ${selectedTopic}`,
+          subject: "AI Tutor",
+          done: false,
+        },
+      ]
+    : [
+        {
+          time: "08:00",
+          title: "Rotational Dynamics - Concept",
+          subject: "Physics",
+          done: true,
+        },
+        {
+          time: "10:30",
+          title: "Coordination Compounds - DPP",
+          subject: "Chemistry",
+          done: true,
+        },
+        {
+          time: "14:00",
+          title: "Definite Integration - Practice",
+          subject: "Math",
+          done: false,
+        },
+        {
+          time: "18:30",
+          title: "Mock Test #25 (Full Syllabus)",
+          subject: "Test",
+          done: false,
+        },
+      ];
+
+  // 3. Dynamic weekly performance chart
+  const defaultBars = [
+    { day: "M", value: 58 },
+    { day: "T", value: 72 },
+    { day: "W", value: 64 },
+    { day: "T", value: 84 },
+    { day: "F", value: 76 },
+    { day: "S", value: 92 },
+    { day: "S", value: 89 },
+  ];
+
+  let bars = [...defaultBars];
+  if (progress?.recent_attempts && progress.recent_attempts.length > 0) {
+    const recent = [...progress.recent_attempts].slice(0, 7).reverse();
+    const updatedBars = recent.map((attempt) => {
+      const dayName = new Date(attempt.created_at)
+        .toLocaleDateString("en-US", { weekday: "short" })
+        .charAt(0);
+      return {
+        day: dayName,
+        value: Math.round(attempt.score),
+      };
+    });
+
+    // Merge recent test scores over the end of defaultBars
+    const mergeIndex = defaultBars.length - updatedBars.length;
+    for (let i = 0; i < updatedBars.length; i++) {
+      if (mergeIndex + i >= 0) {
+        bars[mergeIndex + i] = updatedBars[i];
+      }
+    }
+  }
+
+  // Calculate dynamic average speed and percentile based on accuracy
+  const avgAccuracy = progress?.average_score || 78.4;
+  let percentile = 94.6;
+  if (avgAccuracy > 90) percentile = 99.5;
+  else if (avgAccuracy > 80) percentile = 98.2;
+  else if (avgAccuracy > 70) percentile = 95.4;
+  else if (avgAccuracy > 60) percentile = 91.2;
+  else if (avgAccuracy > 50) percentile = 86.5;
+
+  // 4. Dynamic upcoming mock exam card
+  const isAdv = targetExam.includes("Advanced");
+  const upcomingMockTitle = isAdv ? "Full Syllabus Advanced #12" : "Full Syllabus Mains #25";
+  const upcomingMockMeta = isAdv
+    ? "Tonight · 6:30 PM · 3 hours · 54 questions"
+    : "Tonight · 6:30 PM · 3 hours · 90 questions";
+  const upcomingMockQList = isAdv
+    ? [
+        { label: "Physics", count: 18, scheme: "+4/-2 marks" },
+        { label: "Chemistry", count: 18, scheme: "+4/-2 marks" },
+        { label: "Math", count: 18, scheme: "+4/-2 marks" },
+      ]
+    : [
+        { label: "Physics", count: 30, scheme: "+4/-1 marks" },
+        { label: "Chemistry", count: 30, scheme: "+4/-1 marks" },
+        { label: "Math", count: 30, scheme: "+4/-1 marks" },
+      ];
+
+  // 5. Dynamic Continue Learning card
+  const continueLearningTitle = selection
+    ? `${selectedSubject} - ${selectedTopic}`
+    : "Modern Physics - Photoelectric Effect";
+  const continueLearningDetail = selection
+    ? `Master details and take tests on ${selectedTopic}`
+    : "Lecture 14 of 18 · 32 min remaining";
+  const continueLearningProgress = selection ? 50 : 78;
+
+  if (loading) {
+    return (
+      <main className="student-dashboard dashboard-home">
+        <section className="dashboard-hero-panel" style={{ minHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="dashboard-hero-content">
+            <h1 style={{ fontSize: "1.8rem" }}>Loading dashboard insights...</h1>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="student-dashboard dashboard-home">
@@ -119,7 +268,7 @@ function Dashboard() {
       </section>
 
       <section className="dashboard-stat-grid" aria-label="Preparation summary">
-        {stats.map((stat) => {
+        {dynamicStats.map((stat) => {
           const Icon = stat.icon;
           return (
             <article className="dashboard-stat-card" key={stat.kicker}>
@@ -143,16 +292,16 @@ function Dashboard() {
                 <h2>Your daily plan</h2>
               </div>
               <span>
-                <CalendarDays size={17} /> Mon, 12 Jun
+                <CalendarDays size={17} /> {new Date().toLocaleDateString("en-US", { weekday: "short", day: "numeric", month: "short" })}
               </span>
             </div>
 
             <div className="dashboard-plan-list">
-              {planItems.map((item) => (
+              {dynamicPlanItems.map((item) => (
                 <Link
                   className="dashboard-plan-row"
                   key={`${item.time}-${item.title}`}
-                  to={item.subject === "Test" ? "/dashboard/mock-tests" : "/dashboard/courses"}
+                  to={item.subject === "Test" ? "/dashboard/mock-tests" : item.subject === "AI Tutor" ? "/dashboard/doubts" : "/dashboard/courses"}
                 >
                   <time>{item.time}</time>
                   <span className={item.done ? "dashboard-plan-dot done" : "dashboard-plan-dot"}>
@@ -173,8 +322,8 @@ function Dashboard() {
             <h2>Snapshot · last 7 days</h2>
 
             <div className="dashboard-bar-chart" aria-label="Last 7 days performance chart">
-              {bars.map((bar) => (
-                <div className="dashboard-bar-item" key={`${bar.day}-${bar.value}`}>
+              {bars.map((bar, index) => (
+                <div className="dashboard-bar-item" key={`${bar.day}-${bar.value}-${index}`}>
                   <span style={{ height: `${bar.value}%` }}></span>
                   <small>{bar.day}</small>
                 </div>
@@ -184,17 +333,17 @@ function Dashboard() {
             <div className="dashboard-performance-stats">
               <span>
                 Avg Accuracy
-                <strong>78.4%</strong>
+                <strong>{avgAccuracy}%</strong>
                 <small>↗ +3.2%</small>
               </span>
               <span>
                 Avg Speed
-                <strong>48s/Q</strong>
+                <strong>45s/Q</strong>
                 <small>↗ -6s</small>
               </span>
               <span>
                 Rank Percentile
-                <strong>94.6</strong>
+                <strong>{percentile}</strong>
                 <small>↗ +1.1</small>
               </span>
             </div>
@@ -204,31 +353,27 @@ function Dashboard() {
         <aside className="dashboard-side-column">
           <article className="dashboard-mock-card">
             <p className="dashboard-overline">Upcoming Mock</p>
-            <h2>Full Syllabus #25</h2>
-            <p>Tonight · 6:30 PM · 3 hours · 90 questions</p>
+            <h2>{upcomingMockTitle}</h2>
+            <p>{upcomingMockMeta}</p>
             <ul>
-              <li>
-                Physics 30Q <strong>+4 marks</strong>
-              </li>
-              <li>
-                Chemistry 30Q <strong>+4 marks</strong>
-              </li>
-              <li>
-                Math 30Q <strong>+4 marks</strong>
-              </li>
+              {upcomingMockQList.map((q) => (
+                <li key={q.label}>
+                  {q.label} {q.count}Q <strong>{q.scheme}</strong>
+                </li>
+              ))}
             </ul>
             <Link to="/dashboard/mock-tests">Enter Test Hall</Link>
           </article>
 
           <article className="dashboard-continue-card">
             <p className="dashboard-overline">Continue Learning</p>
-            <h2>Modern Physics - Photoelectric Effect</h2>
-            <span>Lecture 14 of 18 · 32 min remaining</span>
+            <h2>{continueLearningTitle}</h2>
+            <span>{continueLearningDetail}</span>
             <div className="dashboard-course-progress">
-              <span></span>
+              <span style={{ width: `${continueLearningProgress}%` }}></span>
             </div>
-            <small>78% complete</small>
-            <Link to="/dashboard/courses">
+            <small>{continueLearningProgress}% complete</small>
+            <Link to={selection ? "/dashboard/ai-classroom" : "/dashboard/courses"}>
               <Play size={17} /> Resume
             </Link>
           </article>

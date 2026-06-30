@@ -19,117 +19,202 @@ interface TeacherContent {
 const topicContent: Record<string, Record<string, TeacherContent>> = {
   Physics: {
     "Rotational Dynamics": {
-      title: "Rotational Dynamics - Virtual Explanation",
+      title: "Rotational Dynamics - Complete Guide",
       explanation:
-        "Rotational dynamics deals with the motion of objects rotating about a fixed axis. Just like linear motion has force, mass, and acceleration, rotational motion has torque, moment of inertia, and angular acceleration. The fundamental equation is: τ = Iα, where τ is torque, I is moment of inertia, and α is angular acceleration.",
-      examples: [
-        "A spinning wheel: When you apply a force to the rim, it rotates about the center. The farther from the center you apply the force, the greater the torque.",
-        "A spinning top: Remains upright due to angular momentum conservation.",
-        "Earth's rotation: Rotates about its axis completing one rotation every 24 hours.",
-      ],
+        "Rotational dynamics extends translational mechanics to rotating systems using angular coordinates. Just like linear motion has force, mass, and acceleration, rotational motion has torque, moment of inertia, and angular acceleration. The fundamental equation is: τ = Iα.",
       formulas: [
-        "Torque: τ = r × F (cross product)",
-        "Moment of Inertia: I = Σ(m·r²)",
-        "Angular equation: τ = Iα",
-        "Angular momentum: L = Iω",
+        "Torque Vector: τ = r × F = Iα",
+        "Moment of Inertia: I = ∑ m_i · r_i² = ∫ r² dm",
+        "Rotational KE: K = 1/2 I ω²",
+        "Parallel Axis Theorem: I = I_cm + M d²",
+      ],
+      examples: [
+        "Illustration 1: A uniform disc of mass 2 kg and radius 0.5 m has a force of 4 N applied tangentially at the rim. Calculate angular acceleration. Solution: I = 0.5 * 2 * 0.25 = 0.25 kg m^2. Torque = 4 * 0.5 = 2 N m. α = 2 / 0.25 = 8 rad/s^2.",
+        "Illustration 2: Find the ratio of rotational KE to total KE for a solid sphere performing pure rolling. Solution: I = (2/5)MR^2. K_rot = (1/5)Mv^2, K_total = (7/10)Mv^2. Ratio = 2/7.",
+        "Real-life Example: Flywheels are used in internal combustion engines to store rotational kinetic energy and smooth out variations in power output.",
       ],
       tips: [
-        "Always identify the axis of rotation first",
-        "Remember that torque depends on both force magnitude and perpendicular distance",
-        "Use right-hand rule to determine direction of angular quantities",
+        "Always identify the axis of rotation first.",
+        "Use the right-hand rule to find the direction of angular velocity and torque vectors.",
+        "In pure rolling, the contact point is instantaneously at rest.",
       ],
-      relatedTopics: ["Circular Motion", "Conservation of Angular Momentum", "Torque"],
+      relatedTopics: ["Rolling Motion", "Circular Motion", "Angular Momentum"],
+    },
+    "Kinematics": {
+      title: "Kinematics - Projectiles & 1D Motion",
+      explanation:
+        "Kinematics describes motion without considering the forces causing it. For constant acceleration, motion is governed by the standard SUVAT equations.",
+      formulas: [
+        "SUVAT Equations: v = u + at, s = ut + 0.5at², v² = u² + 2as",
+        "Max Projectile Height: H = u² sin²θ / 2g",
+        "Horizontal Range: R = u² sin(2θ) / g",
+        "Time of Flight: T = 2u sinθ / g",
+      ],
+      examples: [
+        "Illustration 1: A particle starts from rest and moves with constant acceleration 4 m/s^2. Find its displacement after 6 seconds. Solution: s = 0 + 0.5 * 4 * 36 = 72 m.",
+        "Illustration 2: A ball is projected at 20 m/s at an angle of 30° above the horizontal. Find its maximum height. Solution: H = (20^2 * sin^2 30) / (2 * 10) = 400 * 0.25 / 20 = 5 m.",
+        "Real-life Example: Basketball players shoot at specific release angles (typically 45-50 degrees) to optimize the probability of scoring based on projectile trajectory.",
+      ],
+      tips: [
+        "Apply SUVAT formulas only when acceleration is constant.",
+        "For variable acceleration, use calculus: v = dx/dt, a = dv/dt = v dv/dx.",
+        "Horizontal velocity of a projectile remains constant throughout its flight.",
+      ],
+      relatedTopics: ["Relative Velocity", "Newton's Laws", "Circular Motion"],
+    },
+    "Newton's Laws of Motion": {
+      title: "Newton's Laws of Motion & Friction",
+      explanation:
+        "Newton's laws of motion form the bedrock of classical mechanics, defining inertia, forces (F=ma), and action-reaction pairs.",
+      formulas: [
+        "Second Law: F = m a",
+        "Static Friction: f_s ≤ μ_s N",
+        "Kinetic Friction: f_k = μ_k N",
+        "Incline Normal Force: N = mg cosθ",
+      ],
+      examples: [
+        "Illustration 1: A 10 kg block sits on a rough floor with μ_s = 0.4. If a 30 N horizontal force is applied, find the friction force. Solution: N = 100 N. Max static friction = 40 N. Since 30 N < 40 N, the block remains stationary and static friction adapts to exactly 30 N.",
+        "Illustration 2: Two masses (2 kg and 3 kg) are connected by a light string over a pulley. Find acceleration. Solution: a = (3 - 2) * 10 / (3 + 2) = 2 m/s^2.",
+        "Real-life Example: Passenger seat belts utilize inertia (Newton's first law) to restrain occupants when a vehicle decelerates suddenly.",
+      ],
+      tips: [
+        "Draw a free-body diagram (FBD) containing all external forces before writing equations.",
+        "Friction opposes the relative motion or the tendency of relative motion.",
+        "Internal forces always cancel out when treating the entire system as a single entity.",
+      ],
+      relatedTopics: ["Kinematics", "Work, Power & Energy", "Friction"],
     },
     "Modern Physics": {
-      title: "Modern Physics - Photoelectric Effect",
+      title: "Modern Physics - Photoelectric Effect & Bohr Model",
       explanation:
-        "The photoelectric effect is the emission of electrons from a material when light shines on it. This effect proves that light behaves as particles (photons). When a photon with sufficient energy hits an electron, it transfers its energy, allowing the electron to escape the material.",
-      examples: [
-        "Solar cells: Convert light energy directly into electrical energy",
-        "Image sensors in cameras: Detect light by counting ejected electrons",
-        "Night vision goggles: Amplify weak light signals",
-      ],
+        "Photoelectric effect establishes light's particle nature via photons. Bohr's model explains hydrogen-like atomic transitions and spectral emissions.",
       formulas: [
-        "Photon energy: E = hf = hc/λ",
-        "Photoelectric equation: hf = Φ + KEmax",
-        "Stopping potential: eVs = KEmax",
+        "Photon Energy: E = hf = hc/λ = 1240 / λ(nm) eV",
+        "Einstein Equation: K_max = hf - Φ",
+        "Stopping Potential: eV_s = K_max",
+        "Bohr Orbit Energy: E_n = -13.6 Z²/n² eV",
+      ],
+      examples: [
+        "Illustration 1: A metal with work function 2.0 eV is hit by 400 nm light. Find the stopping potential. Solution: E_photon = 1240/400 = 3.1 eV. K_max = 3.1 - 2.0 = 1.1 eV. V_s = 1.1 V.",
+        "Illustration 2: Find the wavelength emitted when an electron in a hydrogen atom jumps from n=3 to n=2. Solution: E_3 = -1.51 eV, E_2 = -3.4 eV. ΔE = 1.89 eV. λ = 1240 / 1.89 = 656 nm.",
+        "Real-life Example: Solar photovoltaic panels utilize the photoelectric effect to release electrons from silicon cells when struck by sunlight.",
       ],
       tips: [
-        "The threshold frequency determines the minimum energy needed",
-        "Increasing light intensity increases current, not kinetic energy",
-        "Work function is material-specific",
+        "Never use Celsius in absolute gas laws or radiation formulas; convert to Kelvin first.",
+        "Use the shortcut hc = 1240 eV nm to speed up optical calculations.",
+        "For Bohr's formulas, ensure the species is hydrogen-like (single-electron).",
       ],
-      relatedTopics: ["Quantum Theory", "Wave-Particle Duality", "Planck's Constant"],
+      relatedTopics: ["Nuclear Physics", "Quantum Theory", "Electromagnetism"],
     },
+    "Nuclear Physics": {
+      title: "Nuclear Physics - Radioactivity & Binding Energy",
+      explanation:
+        "Nuclear physics deals with nuclear radius, radioactive decay (first-order kinetics), and the energy binding protons and neutrons together.",
+      formulas: [
+        "Nuclear Radius: R = R₀ A^{1/3} (R₀ ≈ 1.2 fm)",
+        "Decay Law: N = N₀ e^{-λ t} = N₀ (1/2)^n",
+        "Half-Life: T_{1/2} = 0.693 / λ",
+        "Mass Defect: Δm = [Z m_p + (A-Z) m_n] - M_nucleus",
+        "Binding Energy: BE = Δm · 931.5 MeV (if Δm is in u)",
+      ],
+      examples: [
+        "Illustration 1: Compare nuclear radii of nuclei with mass numbers 27 and 64. Solution: R1/R2 = (27/64)^{1/3} = 3/4.",
+        "Illustration 2: A sample's activity falls to 1/8 of its initial value in 30 minutes. Find its half-life. Solution: 1/8 = (1/2)^3, so 3 half-lives have passed in 30 mins. Half-life = 10 minutes.",
+        "Real-life Example: Carbon-14 dating uses the radioactivity decay constant of organic remains to accurately estimate their historical age.",
+      ],
+      tips: [
+        "Nuclear density is approximately constant for all nuclei because volume is proportional to mass number A.",
+        "Always subtract background counts before calculation.",
+        "Binding energy per nucleon (BE/A) determines nuclear stability, not total binding energy.",
+      ],
+      relatedTopics: ["Modern Physics", "Quantum Numbers", "X-rays"],
+    }
   },
   Chemistry: {
-    "Coordination Compounds": {
-      title: "Coordination Compounds - Advanced Concepts",
+    "Chemical Bonding": {
+      title: "Chemical Bonding - Hybridization & Geometry",
       explanation:
-        "Coordination compounds consist of a central metal atom bonded to ligands (molecules or ions). The ligands donate electron pairs to form coordinate covalent bonds. The coordination number indicates how many ligands surround the central atom, typically 4 or 6.",
-      examples: [
-        "Hemoglobin: Iron at the center with oxygen-carrying capability",
-        "Chlorophyll: Magnesium center in plant photosynthesis",
-        "Cisplatin: Cancer treatment drug containing platinum",
-      ],
+        "Chemical bonds form to minimize system potential energy. Hybridization and VSEPR theories predict molecular geometry based on electron pairs.",
       formulas: [
-        "Coordination sphere: [M(L)n]ˣ⁺",
-        "Crystal field splitting energy: Δ = E(eg) - E(t2g)",
-        "Spectrochemical series: I⁻ < Br⁻ < Cl⁻ < F⁻ < H₂O < NH₃ < CN⁻",
+        "Steric Number: (Valence electrons + Monovalent atoms - Charge) / 2",
+        "Bond Order: 0.5 * (Bonding electrons - Antibonding electrons)",
+      ],
+      examples: [
+        "Illustration 1: Find the hybridization and shape of BF3. Solution: Boron has 3 valence electrons, monovalents = 3. Steric Number = (3+3)/2 = 3. Hybridization is sp2; shape is trigonal planar.",
+        "Illustration 2: Calculate the bond order of O2. Solution: 16 electrons. Bonding = 10, Antibonding = 6. Bond Order = 0.5 * (10 - 6) = 2 (paramagnetic).",
+        "Real-life Example: Diamond and graphite are allotropes of carbon with completely different physical properties due to sp3 tetrahedral vs sp2 planar structures.",
       ],
       tips: [
-        "Ligand strength determines splitting magnitude",
-        "CFSE (Crystal Field Stabilization Energy) affects stability",
-        "Chelate effect explains why multidentate ligands bind strongly",
+        "Lone pairs occupy more space than bond pairs, causing bond angle compression.",
+        "Diatomic configurations for elements up to N2 differ from O2/F2.",
+        "High electronegativity difference leads to polar covalent bonds.",
       ],
-      relatedTopics: ["Crystal Field Theory", "Ligand Field Theory", "Oxidation States"],
+      relatedTopics: ["Coordination Compounds", "Periodic Table", "Gaseous State"],
     },
+    "Coordination Compounds": {
+      title: "Coordination Compounds & CFSE",
+      explanation:
+        "Coordination complexes involve coordinate bonds between a central transition metal and electron-donating ligands.",
+      formulas: [
+        "Effective Atomic Number (EAN): Z - (Oxidation State) + 2 * (Coordination Number)",
+        "CFSE splitting energy relation: Δt ≈ 4/9 Δo",
+      ],
+      examples: [
+        "Illustration 1: Find the oxidation state and coordination number of cobalt in [Co(en)3]Cl3. Solution: en is bidentate, CN = 3 * 2 = 6. Chloride is Cl-, oxidation state = +3.",
+        "Illustration 2: Identify magnetic behavior of [Fe(CN)6]3-. Solution: CN- is a strong field ligand, causing pairing in d5 iron, leaving one unpaired electron (paramagnetic).",
+        "Real-life Example: Hemoglobin is a vital coordination complex with iron at the center that binds and transports oxygen throughout the human bloodstream.",
+      ],
+      tips: [
+        "Bidentate ligands like oxalate and ethylenediamine count as 2 bonds each.",
+        "Strong field ligands like CN- and CO force electron pairing (low spin).",
+        "Chelating ligands create highly stable ring structures.",
+      ],
+      relatedTopics: ["Chemical Bonding", "Transition Elements", "d-Block Chemistry"],
+    }
   },
   Mathematics: {
     "Definite Integration": {
-      title: "Definite Integration - Complete Guide",
+      title: "Definite Integration - Theorems & King's Rule",
       explanation:
-        "Definite integration calculates the net area between a curve and the x-axis over a specified interval. The fundamental theorem of calculus links differentiation and integration: ∫ₐᵇ f(x)dx = F(b) - F(a), where F is the antiderivative.",
-      examples: [
-        "Area under a parabola from x=0 to x=3",
-        "Volume of revolution around an axis",
-        "Work done by a variable force",
-      ],
+        "Definite integrals evaluate the net area bounded by a function and the coordinate axes over a specific domain interval.",
       formulas: [
-        "Definite integral: ∫ₐᵇ f(x)dx = F(b) - F(a)",
-        "Integration by parts: ∫ u dv = uv - ∫ v du",
-        "Substitution: ∫ f(g(x))g'(x)dx = ∫ f(u)du",
-        "Power rule: ∫ xⁿ dx = xⁿ⁺¹/(n+1) + C",
+        "Fundamental Theorem: ∫_a^b f(x) dx = F(b) - F(a)",
+        "King's Rule: ∫_a^b f(x) dx = ∫_a^b f(a + b - x) dx",
+        "Even/Odd rule: ∫_{-a}^a f(x) dx = 0 if odd; 2 ∫_0^a f(x) dx if even",
+      ],
+      examples: [
+        "Illustration 1: Evaluate ∫ from 0 to π/2 of (sin x) / (sin x + cos x) dx. Solution: Apply King's Rule. 2I = ∫ from 0 to π/2 of 1 dx = π/2. Therefore, I = π/4.",
+        "Illustration 2: Evaluate ∫ from -1 to 1 of (x^3 + |x|) dx. Solution: x^3 is odd (integrates to 0), |x| is even. Result = 2 * ∫_0^1 x dx = [x^2]_0^1 = 1.",
+        "Real-life Example: Engineers use definite integration to calculate the exact work done by variable force systems like gas compression in engine pistons.",
       ],
       tips: [
-        "Always identify the integration technique needed first",
-        "Check limits carefully after substitution",
-        "Use LIATE rule for integration by parts",
+        "Apply King's Rule first for integrals with complex fractional trigonometric terms.",
+        "Check for function symmetry (odd/even) immediately when integration limits are symmetric [-a, a].",
+        "Remember to change integration limits when applying substitution.",
       ],
-      relatedTopics: ["Indefinite Integration", "Differentiation", "Area & Volumes"],
+      relatedTopics: ["Indefinite Integration", "Calculus", "Probability"],
     },
     "Probability": {
-      title: "Probability - Advanced Topics",
+      title: "Probability & Bayes' Theorem",
       explanation:
-        "Probability measures the likelihood of an event occurring. Conditional probability, Bayes' theorem, and distributions are crucial concepts. P(A) = (favorable outcomes)/(total outcomes).",
-      examples: [
-        "Drawing cards from a deck",
-        "Rolling dice multiple times",
-        "Quality control in manufacturing",
-      ],
+        "Probability measures the likelihood of events occurring, moving from simple ratios to conditional situations and distributions.",
       formulas: [
-        "Probability: P(A) = n(A)/n(S)",
-        "Conditional probability: P(A|B) = P(A∩B)/P(B)",
-        "Bayes' theorem: P(A|B) = P(B|A)P(A)/P(B)",
-        "Binomial probability: P(X=k) = C(n,k)pᵏ(1-p)ⁿ⁻ᵏ",
+        "Conditional Probability: P(A|B) = P(A ∩ B) / P(B)",
+        "Bayes' Theorem: P(A_i|B) = P(B|A_i)P(A_i) / ∑ P(B|A_j)P(A_j)",
+        "Independent Events: P(A ∩ B) = P(A) · P(B)",
+      ],
+      examples: [
+        "Illustration 1: If P(A) = 0.5 and P(B) = 0.6 are independent events, find P(A ∩ B). Solution: P(A ∩ B) = 0.5 * 0.6 = 0.3.",
+        "Illustration 2: Find probability of getting a sum of 7 when rolling two fair dice. Solution: Favorable outcomes = (1,6), (2,5), (3,4), (4,3), (5,2), (6,1). Total = 36. P = 6/36 = 1/6.",
+        "Real-life Example: Spam filters use Bayes' Theorem to dynamically calculate the probability that an incoming email is spam based on the presence of specific keywords.",
       ],
       tips: [
-        "Identify whether events are independent or dependent",
-        "Use tree diagrams for complex scenarios",
-        "Remember: P(A) + P(A') = 1",
+        "P(A ∪ B) = P(A) + P(B) - P(A ∩ B).",
+        "Mutually exclusive events cannot occur simultaneously, meaning P(A ∩ B) = 0.",
+        "Independent events are NOT the same as mutually exclusive events.",
       ],
-      relatedTopics: ["Combinations", "Permutations", "Statistics"],
-    },
+      relatedTopics: ["Combinations & Permutations", "Definite Integration", "Algebra"],
+    }
   },
 };
 
