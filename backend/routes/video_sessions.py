@@ -9,6 +9,7 @@ from db import get_session
 from models.db_models import User
 from models.video_session import AITeachingSession, LiveDoubtSession, VideoSession
 from routes.dependencies import get_current_user
+from mongodb import get_mongodb
 
 router = APIRouter(prefix="/api/videos", tags=["Video Sessions"])
 
@@ -474,11 +475,12 @@ def get_ai_teaching_session(
     return ai_session
 
 @router.post("/ai-teaching/sessions/{session_id}/message")
-def send_message_to_ai(
+async def send_message_to_ai(
     session_id: str,
     payload: AITeachingMessage,
     current_user: User = Depends(get_current_user),
-    session_db: Session = Depends(get_session)
+    session_db: Session = Depends(get_session),
+    mongo_db = Depends(get_mongodb)
 ):
     """Send a message to the AI teaching agent"""
     ai_session = session_db.exec(
@@ -505,6 +507,22 @@ def send_message_to_ai(
     session_db.add(ai_session)
     session_db.commit()
     session_db.refresh(ai_session)
+    
+    # Store AI teaching log in MongoDB
+    if mongo_db is not None:
+        try:
+            teaching_log = {
+                "session_id": session_id,
+                "user_id": current_user.id,
+                "subject": ai_session.subject,
+                "topic": ai_session.topic,
+                "user_message": payload.user_message,
+                "ai_response": ai_explanation,
+                "timestamp": datetime.utcnow()
+            }
+            await mongo_db.ai_teaching_logs.insert_one(teaching_log)
+        except Exception as e:
+            print(f"Error saving AI teaching log to MongoDB: {e}")
     
     return {
         "user_message": payload.user_message,

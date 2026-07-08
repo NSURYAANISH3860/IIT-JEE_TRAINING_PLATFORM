@@ -1,9 +1,11 @@
 from typing import Optional
+from datetime import datetime
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from routes.dependencies import get_current_user
+from mongodb import get_mongodb
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
@@ -121,6 +123,26 @@ def build_agent_reply(message: str, subject: Optional[str], topic: Optional[str]
 
 
 @router.post("/", response_model=ChatResponse)
-def chat(request: ChatRequest, current_user=Depends(get_current_user)):
+async def chat(
+    request: ChatRequest,
+    current_user=Depends(get_current_user),
+    mongo_db=Depends(get_mongodb)
+):
     reply = build_agent_reply(request.message, request.subject, request.topic)
+    
+    # Store chat turn log in MongoDB
+    if mongo_db is not None:
+        try:
+            chat_log = {
+                "user_id": current_user.id,
+                "message": request.message,
+                "reply": reply,
+                "subject": request.subject,
+                "topic": request.topic,
+                "timestamp": datetime.utcnow()
+            }
+            await mongo_db.chat_histories.insert_one(chat_log)
+        except Exception as e:
+            print(f"Error saving chat log to MongoDB: {e}")
+
     return ChatResponse(reply=reply, subject=request.subject, topic=request.topic)

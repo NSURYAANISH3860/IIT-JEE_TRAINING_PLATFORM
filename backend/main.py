@@ -9,6 +9,7 @@ from sqlmodel import Session, select, SQLModel
 
 from db import create_db_and_tables, engine
 from storage import create_default_questions
+from mongodb import db_manager
 
 # Import routers
 from routes.admin import router as admin_router
@@ -93,10 +94,16 @@ app.include_router(ai_router)
 app.include_router(video_sessions_router)
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     create_db_and_tables()
     with Session(engine) as session:
         create_default_questions(session)
+    db_manager.connect()
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    db_manager.disconnect()
 
 @app.get("/")
 def read_root():
